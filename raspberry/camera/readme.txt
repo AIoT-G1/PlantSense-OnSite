@@ -1,0 +1,1 @@
+Folder for raspberry code acting as fog processor
