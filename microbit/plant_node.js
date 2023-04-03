@@ -40,7 +40,7 @@ basic.showNumber(control.deviceSerialNumber());
  * BASIC FOREVER LOOP
  */
 basic.forever(function () {
-  // ultrasonic reading
+  // ultrasonic reading (with grove speaker for warning beeps)
   f_ultrasonic();
 
   // soil moisture reading
@@ -83,16 +83,18 @@ function measure_distance() {
   }
 
   // Beep a warning tone when US detects an object within 5cm
-  f_checkForObstruction(distance)
+  f_checkForObstruction(distance);
 }
 
 /**
  * Grove Speaker (PIN 1)
- * (Micro:bit will beep a warning tone and display a sad face when the ultrasonic ranger detects an object within 5 cm.)
+ * (Micro:bit will beep a warning tone and display a sad face when the ultrasonic ranger detects an object within X cm.)
  */
-function f_checkForObstruction(distance) {
-  if (distance <= 5) {
+function f_checkForObstruction(distance: any) {
+  if (distance <= 30) {
     basic.showIcon(IconNames.Sad);
+
+    music.setVolume(255);
     music.playTone(988, music.beat(BeatFraction.Whole));
   } else {
     basic.showIcon(IconNames.Happy);
@@ -108,15 +110,16 @@ function f_light_sensor() {
 
   if (light_reading < 210) {
     // Dark
-    basic.showNumber(light_reading);
+    // basic.showNumber(light_reading);
   } else {
     // Bright (>= 210)
-
-    basic.showNumber(light_reading);
+    // basic.showNumber(light_reading);
   }
 
   //Testing
-  led.plotBarGraph(light_reading, 630);
+  if (input.buttonIsPressed(Button.A)) {
+    basic.showNumber(light_reading);
+  }
 }
 
 /**
@@ -125,12 +128,10 @@ function f_light_sensor() {
 function f_soil_moisture() {
   sm_reading = pins.analogReadPin(AnalogPin.P8);
 
-  if (input.buttonIsPressed(Button.A)) {
+  //Testing
+  if (input.buttonIsPressed(Button.B)) {
     basic.showString("" + sm_reading);
   }
-
-  //Testing
-  led.plotBarGraph(sm_reading, 1023);
 }
 
 radio.onReceivedString(function (receivedString) {
