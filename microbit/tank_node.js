@@ -9,6 +9,7 @@ serial.redirectToUSB()
 
 basic.showIcon(IconNames.Yes)
 basic.forever(function () {
+    // Reads water level every 30s
     get_water_level()
     pause(30000)   
 })
