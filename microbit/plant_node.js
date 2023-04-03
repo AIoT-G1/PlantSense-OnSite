@@ -1,7 +1,7 @@
 let distance = 0
 let BUGGY_MIN_DISTANCE = 20
 let BUGGY_MAX_DISTANCE = 80
-let buggy_onMove = 1
+let buggy_on_move = 1
 let buggy_is_here = 0
 
 // Ultra-sonic reading frequency
@@ -30,13 +30,13 @@ basic.forever(function () {
 })
 
 function f_ultrasonic() {
-  if (buggy_onMove == 1 && us_cooldown == 0) {
+  if (buggy_on_move == 1 && us_cooldown == 0) {
     if (input.runningTime() - us_reading_baselineTime >= us_reading_interval_onMove) {
       measure_distance()
       us_reading_baselineTime = input.runningTime()
     }
   }
-  if (buggy_onMove == 1 && us_cooldown == 1) {
+  if (buggy_on_move == 1 && us_cooldown == 1) {
     if (input.runningTime() - us_cooldown_baselineTime >= us_cooldown_length) {
       us_cooldown = 0
       basic.showString("D")
@@ -49,7 +49,7 @@ function measure_distance() {
     if (BUGGY_MIN_DISTANCE < distance && distance < BUGGY_MAX_DISTANCE) {
         radio.sendString("notify=arrival")
         buggy_is_here = 1
-        buggy_onMove = 0
+        buggy_on_move = 0
         basic.showString("A")
     }
 }
@@ -68,10 +68,10 @@ radio.onReceivedString(function (receivedString) {
           basic.showString("D")
         }
         buggy_is_here = 0
-        buggy_onMove = 1
+        buggy_on_move = 1
       }
       if (buf_us[1] == "arrival") {
-        buggy_onMove = 0
+        buggy_on_move = 0
         buggy_is_here = 0
         basic.showString("A")
       }
