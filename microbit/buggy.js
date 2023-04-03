@@ -18,18 +18,18 @@ radio.setTransmitPower(8)
 //serial.redirectToUSB()
 
 
-// Xueqi code for buggy motion
+// Code for buggy motion ¿¿?? <--------- Xueqi
 function stop_buggy() {
-    basic.showString("A")
+    basic.showString("S")
     pause(6000)
 
-    // Notify departure
-    radio.sendString("notify=departure")
+    // Notify departure disease analysis
+    radio.sendString("notify=departure") 
 }
 
-// Rashini code for disease detection
+// Code for disease detection <--------- Rashini
 function take_pictures(curr_plant_dn: number) {
-    //serial.writeLine("cmd=take_picture:" + control.deviceName())
+    //serial.writeLine("cmd=take_picture:" + curr_plant_dn)
     basic.showString("P")
     pause(300)
     basic.showNumber(curr_plant_dn)
@@ -37,5 +37,5 @@ function take_pictures(curr_plant_dn: number) {
 
 
 basic.forever(function () {
-    // Xueqi code for buggy motion
+    // Code for buggy motion <--------- Xueqi
 })
