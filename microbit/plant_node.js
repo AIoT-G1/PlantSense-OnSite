@@ -23,10 +23,10 @@ radio.setTransmitPower(8)
 let data = ""
 basic.showNumber(control.deviceSerialNumber())
 basic.forever(function () {
-    // Check ultrasonic reading interval
+    // ultrasonic reading
     f_ultrasonic()
 
-    // Other readings (Dan)
+    // Other readings <--------- Dan
 })
 
 function f_ultrasonic() {
@@ -55,6 +55,8 @@ function measure_distance() {
 }
 
 radio.onReceivedString(function (receivedString) {
+
+  // Communication between MicroBits (notify)
     if (receivedString.includes('notify=')) {
         buf_us = receivedString.split('=')
       if (buf_us[1] == "departure") {
