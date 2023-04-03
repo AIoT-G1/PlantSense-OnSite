@@ -102,11 +102,11 @@ function f_checkForObstruction(distance: any) {
 }
 
 /**
- * LIGHT SENSOR (PIN 2)
+ * LIGHT SENSOR (PIN 1)
  * (Output is from 0 – 630 (maximum brightness))
  */
 function f_light_sensor() {
-  light_reading = pins.analogReadPin(AnalogPin.P2);
+  light_reading = pins.analogReadPin(AnalogPin.P1);
 
   if (light_reading < 210) {
     // Dark
@@ -123,10 +123,10 @@ function f_light_sensor() {
 }
 
 /**
- * SOIL MOISTURE SENSOR (PIN 8)
+ * SOIL MOISTURE SENSOR (PIN 2 CLIP)
  */
 function f_soil_moisture() {
-  sm_reading = pins.analogReadPin(AnalogPin.P8);
+  sm_reading = pins.analogReadPin(AnalogPin.P2);
 
   //Testing
   if (input.buttonIsPressed(Button.B)) {
