@@ -1,5 +1,5 @@
 /**
- * RECEIVED FROM SERIAL COMMS (RASPBERRY PI - EDGE SERVER)
+ * RPI<->HUB: RECEIVED FROM SERIAL COMMS (RASPBERRY PI - EDGE SERVER)
  */
 serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
   data = serial.readLine();
@@ -23,7 +23,7 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
 });
 
 /**
- * RECEIVED FROM RADIO COMMS (PLANT MICROBITS)
+ * HUB<->Microbit: RECEIVED FROM RADIO COMMS (PLANT MICROBITS)
  */
 radio.onReceivedString(function (receivedString) {
   // Handshake procedure with other microbits
@@ -61,7 +61,9 @@ basic.showIcon(IconNames.Yes);
  * BASIC FOREVER LOOP
  */
 basic.forever(function () {
-  basic.showNumber(state);
+  f_show_serial_number();
+  f_show_state();
+
   if (state == 1) {
     if (input.runningTime() - handshakeStartTime > 10 * 1000) {
       state = 2;
@@ -90,3 +92,17 @@ basic.forever(function () {
     }
   }
 });
+
+function f_show_serial_number() {
+  //Testing
+  if (input.buttonIsPressed(Button.A)) {
+    basic.showString(control.deviceSerialNumber().toString());
+  }
+}
+
+function f_show_state() {
+  //Testing
+  if (input.buttonIsPressed(Button.B)) {
+    basic.showNumber(state);
+  }
+}
