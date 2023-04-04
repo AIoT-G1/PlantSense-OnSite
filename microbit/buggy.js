@@ -24,6 +24,7 @@ radio.setTransmitPower(8)
 
 function stop_buggy() {
     basic.showString("S")
+    continue_driving = false
     basic.pause(10000)
     pause(6000)
     // Notify departure disease analysis
