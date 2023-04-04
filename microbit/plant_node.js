@@ -43,7 +43,7 @@ basic.showNumber(control.deviceSerialNumber());
  * BASIC FOREVER LOOP
  */
 basic.forever(function () {
-  // ultrasonic reading (with grove speaker for warning beeps)
+  // ultrasonic reading
   f_ultrasonic();
 
   // soil moisture reading
@@ -91,20 +91,6 @@ function measure_distance() {
     buggy_is_here = 1;
     buggy_on_move = 0;
     basic.showString("A");
-  }
-
-  // Beep a warning tone when US detects an object within 5cm
-  f_checkForObstruction(distance);
-}
-
-/**
- * Grove Speaker (PIN 1)
- * (Micro:bit will beep a warning tone and display a sad face when the ultrasonic ranger detects an object within X cm.)
- */
-function f_checkForObstruction(distance: any) {
-  if (BUGGY_MIN_DISTANCE < distance && distance < BUGGY_MAX_DISTANCE) {
-    music.setVolume(255);
-    music.playTone(988, music.beat(BeatFraction.Whole));
   }
 }
 
