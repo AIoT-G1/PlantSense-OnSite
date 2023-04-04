@@ -43,6 +43,8 @@ basic.showNumber(control.deviceSerialNumber());
  * BASIC FOREVER LOOP
  */
 basic.forever(function () {
+  f_show_serial_number();
+
   // ultrasonic reading
   f_ultrasonic();
 
@@ -55,13 +57,38 @@ basic.forever(function () {
   // on-board temperature reading
   f_onboard_temperature();
 
-  f_send_data_to_hub();
+  f_send_sensor_data_to_hub();
 });
+
+function f_show_serial_number() {
+  //Testing
+  if (input.buttonIsPressed(Button.A)) {
+    basic.showString(control.deviceSerialNumber().toString());
+  }
+}
 
 /**
  * UPLOAD/SEND TO MICROBIT HUB
  */
-function f_send_data_to_hub() {}
+function f_send_sensor_data_to_hub() {
+  data =
+    "{'timestamp': " +
+    input.runningTime +
+    "" +
+    ", 'type': 'plant_node_data'" +
+    ", 'plant_node_id' : " +
+    control.deviceSerialNumber() +
+    ", 'readings': { 'soil_moisture' : " +
+    sm_reading +
+    ", 'light_sensor' : " +
+    light_reading +
+    ", 'onboard_temperature' : " +
+    onboard_temp_reading +
+    "}}";
+
+  // Send data over Radio
+  radio.sendString("collect=" + data);
+}
 
 /**
  * ULTRASONIC RANGER SENSOR (PIN 0)
@@ -134,7 +161,7 @@ function f_onboard_temperature() {
   onboard_temp_reading = input.temperature();
 
   //Testing
-  if (input.buttonIsPressed(Button.A)) {
+  if (input.buttonIsPressed(Button.AB)) {
     basic.showString("" + onboard_temp_reading);
   }
 }
@@ -155,7 +182,15 @@ radio.onReceivedString(function (receivedString) {
     radio.sendString("enrol=" + control.deviceSerialNumber());
   }
 
-  // Communication between MicroBits (notify)
+  /**
+   * COMMS between Microbits
+   */
+  // Plant Microbits (M1, M2, ...)
+  if (receivedString.includes("sensor=")) {
+    //ignore (Plant microbits do not need to communicate with each other)
+  }
+
+  // Buggy Microbit (notify)
   if (receivedString.includes("notify=")) {
     buf_us = receivedString.split("=");
     if (buf_us[1] == "departure") {
