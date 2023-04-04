@@ -36,10 +36,6 @@ let onboard_temp_reading = 0;
  * END
  */
 
-radio.setGroup(8);
-radio.setTransmitSerialNumber(true);
-radio.setTransmitPower(8);
-
 let data = "";
 basic.showNumber(control.deviceSerialNumber());
 
@@ -58,7 +54,14 @@ basic.forever(function () {
 
   // on-board temperature reading
   f_onboard_temperature();
+
+  f_send_data_to_hub();
 });
+
+/**
+ * UPLOAD/SEND TO MICROBIT HUB
+ */
+function f_send_data_to_hub() {}
 
 /**
  * ULTRASONIC RANGER SENSOR (PIN 0)
@@ -150,13 +153,22 @@ function f_onboard_temperature() {
   }
 }
 
+/**
+ * RADIO COMMS WITH MICROBITS
+ */
+radio.setGroup(8);
+radio.setTransmitSerialNumber(true);
+radio.setTransmitPower(8);
+
 radio.onReceivedString(function (receivedString) {
   // Hub handshake procedure
   if (receivedString.includes("handshake")) {
-    let rd_wait = Math.random() * 100;
-    pause(rd_wait); // Pauses during random interval to avoid collision
+    // Pauses during random interval to avoid collision
+    randomWait();
+
     radio.sendString("enroll=" + control.deviceSerialNumber());
   }
+
   // Communication between MicroBits (notify)
   if (receivedString.includes("notify=")) {
     buf_us = receivedString.split("=");
@@ -181,3 +193,8 @@ radio.onReceivedString(function (receivedString) {
     }
   }
 });
+
+function randomWait() {
+  let rd_wait = Math.random() * 100;
+  pause(rd_wait);
+}
