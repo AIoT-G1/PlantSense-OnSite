@@ -7,7 +7,9 @@ let buggy_on_move = 1;
 let buggy_is_here = 0;
 
 /**
- * SENSORS
+ * External THREE SENSORS; Ultrasonic, Soil moisture, Light sensor
+ * Onboard Microbit Sensor: Measures Ambient Temperature (We'll use both Onboard's & BME280's)
+ * ONE SENSOR: BME280 (Temperature & Humidity) at RPi Edge Server
  */
 
 // Ultra-sonic reading frequency
@@ -27,6 +29,9 @@ let sm_reading = 0;
 // Light Sensor reading
 let light_reading = 0;
 
+// On-board Ambient Temperature
+let onboard_temp_reading = 0;
+
 /**
  * END
  */
@@ -42,50 +47,51 @@ basic.showNumber(control.deviceSerialNumber());
  * BASIC FOREVER LOOP
  */
 basic.forever(function () {
-    // ultrasonic reading (with grove speaker for warning beeps)
-    f_ultrasonic();
+  // ultrasonic reading (with grove speaker for warning beeps)
+  f_ultrasonic();
 
-    // soil moisture reading
-    f_soil_moisture();
+  // soil moisture reading
+  f_soil_moisture();
 
-    // light sensor reading
-    f_light_sensor();
+  // light sensor reading
+  f_light_sensor();
 
-    // Other readings <--------- Dan
+  // on-board temperature reading
+  f_onboard_temperature();
 });
 
 /**
  * ULTRASONIC RANGER SENSOR (PIN 0)
  */
 function f_ultrasonic() {
-    if (buggy_on_move == 1 && us_cooldown == 0) {
-        if (
-            input.runningTime() - us_reading_baselineTime >=
-            us_reading_interval_onMove
-        ) {
-            measure_distance();
-            us_reading_baselineTime = input.runningTime();
-        }
+  if (buggy_on_move == 1 && us_cooldown == 0) {
+    if (
+      input.runningTime() - us_reading_baselineTime >=
+      us_reading_interval_onMove
+    ) {
+      measure_distance();
+      us_reading_baselineTime = input.runningTime();
     }
-    if (buggy_on_move == 1 && us_cooldown == 1) {
-        if (input.runningTime() - us_cooldown_baselineTime >= us_cooldown_length) {
-            us_cooldown = 0;
-            basic.showString("D");
-        }
+  }
+  if (buggy_on_move == 1 && us_cooldown == 1) {
+    if (input.runningTime() - us_cooldown_baselineTime >= us_cooldown_length) {
+      us_cooldown = 0;
+      basic.showString("D");
     }
+  }
 }
 
 function measure_distance() {
-    distance = grove.measureInCentimetersV2(DigitalPin.P0);
-    if (BUGGY_MIN_DISTANCE < distance && distance < BUGGY_MAX_DISTANCE) {
-        radio.sendString("notify=arrival");
-        buggy_is_here = 1;
-        buggy_on_move = 0;
-        basic.showString("A");
-    }
+  distance = grove.measureInCentimetersV2(DigitalPin.P0);
+  if (BUGGY_MIN_DISTANCE < distance && distance < BUGGY_MAX_DISTANCE) {
+    radio.sendString("notify=arrival");
+    buggy_is_here = 1;
+    buggy_on_move = 0;
+    basic.showString("A");
+  }
 
-    // Beep a warning tone when US detects an object within 5cm
-    f_checkForObstruction(distance);
+  // Beep a warning tone when US detects an object within 5cm
+  f_checkForObstruction(distance);
 }
 
 /**
@@ -93,11 +99,10 @@ function measure_distance() {
  * (Micro:bit will beep a warning tone and display a sad face when the ultrasonic ranger detects an object within X cm.)
  */
 function f_checkForObstruction(distance: any) {
-    if (BUGGY_MIN_DISTANCE < distance && distance < BUGGY_MAX_DISTANCE) {
-
-        music.setVolume(255);
-        music.playTone(988, music.beat(BeatFraction.Whole));
-    }
+  if (BUGGY_MIN_DISTANCE < distance && distance < BUGGY_MAX_DISTANCE) {
+    music.setVolume(255);
+    music.playTone(988, music.beat(BeatFraction.Whole));
+  }
 }
 
 /**
@@ -105,62 +110,74 @@ function f_checkForObstruction(distance: any) {
  * (Output is from 0 – 630 (maximum brightness))
  */
 function f_light_sensor() {
-    light_reading = pins.analogReadPin(AnalogPin.P1);
+  light_reading = pins.analogReadPin(AnalogPin.P1);
 
-    if (light_reading < 210) {
-        // Dark
-        // basic.showNumber(light_reading);
-    } else {
-        // Bright (>= 210)
-        // basic.showNumber(light_reading);
-    }
+  if (light_reading < 210) {
+    // Dark
+    // basic.showNumber(light_reading);
+  } else {
+    // Bright (>= 210)
+    // basic.showNumber(light_reading);
+  }
 
-    //Testing
-    if (input.buttonIsPressed(Button.A)) {
-        basic.showNumber(light_reading);
-    }
+  //Testing
+  // if (input.buttonIsPressed(Button.A)) {
+  //     basic.showNumber(light_reading);
+  // }
 }
 
 /**
  * SOIL MOISTURE SENSOR (PIN 2 CLIP)
  */
 function f_soil_moisture() {
-    sm_reading = pins.analogReadPin(AnalogPin.P2);
+  sm_reading = pins.analogReadPin(AnalogPin.P2);
 
-    //Testing
-    if (input.buttonIsPressed(Button.B)) {
-        basic.showString("" + sm_reading);
-    }
+  //Testing
+  if (input.buttonIsPressed(Button.B)) {
+    basic.showString("" + sm_reading);
+  }
+}
+
+/**
+ * ON-BOARD TEMPERATURE SENSOR
+ */
+function f_onboard_temperature() {
+  onboard_temp_reading = input.temperature();
+
+  //Testing
+  if (input.buttonIsPressed(Button.A)) {
+    basic.showString("" + onboard_temp_reading);
+  }
 }
 
 radio.onReceivedString(function (receivedString) {
-    // Hub handshake procedure
-    if (receivedString.includes("handshake")) {
-      let rd_wait = Math.random() * 100;
-      pause(rd_wait); // Pauses during random interval to avoid collision
-      radio.sendString("enroll=" + control.deviceSerialNumber());
+  // Hub handshake procedure
+  if (receivedString.includes("handshake")) {
+    let rd_wait = Math.random() * 100;
+    pause(rd_wait); // Pauses during random interval to avoid collision
+    radio.sendString("enroll=" + control.deviceSerialNumber());
+  }
+  // Communication between MicroBits (notify)
+  if (receivedString.includes("notify=")) {
+    buf_us = receivedString.split("=");
+    if (buf_us[1] == "departure") {
+      if (buggy_is_here == 1) {
+        // Sensor cooldown
+        us_cooldown = 1;
+        us_cooldown_baselineTime = input.runningTime();
+        basic.showString("C");
+        distance = 0;
+      }
+      if (buggy_is_here == 0) {
+        basic.showString("D");
+      }
+      buggy_is_here = 0;
+      buggy_on_move = 1;
     }
-    // Communication between MicroBits (notify)
-    if (receivedString.includes("notify=")) {
-        buf_us = receivedString.split("=");
-        if (buf_us[1] == "departure") {
-            if (buggy_is_here == 1) {
-                // Sensor cooldown
-                us_cooldown = 1;
-                us_cooldown_baselineTime = input.runningTime();
-                basic.showString("C");
-                distance = 0
-            }
-            if (buggy_is_here == 0) {
-                basic.showString("D");
-            }
-            buggy_is_here = 0;
-            buggy_on_move = 1;
-        }
-        if (buf_us[1] == "arrival") {
-            buggy_on_move = 0;
-            buggy_is_here = 0;
-            basic.showString("A");
-        }
+    if (buf_us[1] == "arrival") {
+      buggy_on_move = 0;
+      buggy_is_here = 0;
+      basic.showString("A");
     }
+  }
 });
