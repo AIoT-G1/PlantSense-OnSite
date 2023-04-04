@@ -1,3 +1,6 @@
+/**
+ * RECEIVED FROM SERIAL COMMS (RASPBERRY PI - EDGE SERVER)
+ */
 serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
   data = serial.readLine();
   if (data == "handshake") {
@@ -18,6 +21,10 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
     }
   }
 });
+
+/**
+ * RECEIVED FROM RADIO COMMS (PLANT MICROBITS)
+ */
 radio.onReceivedString(function (receivedString) {
   // Handshake procedure with other microbits
   if (receivedString.includes("enrol=")) {
@@ -33,6 +40,7 @@ radio.onReceivedString(function (receivedString) {
     }
   }
 });
+
 let response = "";
 let microbitDevices: string[] = [];
 let sensorValues: string[] = [];
@@ -48,6 +56,10 @@ radio.setTransmitSerialNumber(true);
 radio.setTransmitPower(7);
 serial.redirectToUSB();
 basic.showIcon(IconNames.Yes);
+
+/**
+ * BASIC FOREVER LOOP
+ */
 basic.forever(function () {
   basic.showNumber(state);
   if (state == 1) {
