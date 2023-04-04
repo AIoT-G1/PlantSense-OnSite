@@ -19,12 +19,15 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
   }
 });
 radio.onReceivedString(function (receivedString) {
+  // Handshake procedure with other microbits
   if (receivedString.includes("enrol=")) {
     if (state == 1) {
       buffer = receivedString.split("=");
       microbitDevices.push(buffer[1]);
     }
-  } else if (receivedString.includes("=")) {
+  }
+  // Data collection
+  if (receivedString.includes("collect=")) {
     if (state == 3) {
       sensorValues.push(receivedString);
     }
