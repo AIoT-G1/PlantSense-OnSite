@@ -152,7 +152,7 @@ radio.onReceivedString(function (receivedString) {
     // Pauses during random interval to avoid collision
     randomWait();
 
-    radio.sendString("enroll=" + control.deviceSerialNumber());
+    radio.sendString("enrol=" + control.deviceSerialNumber());
   }
 
   // Communication between MicroBits (notify)
