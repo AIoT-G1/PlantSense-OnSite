@@ -1,4 +1,8 @@
 let buf_us: string[] = []
+let MICROSEC_IN_A_SEC = 1000000
+let DISTANCE_PER_SEC = 100
+let DEGREES_PER_SEC = 220
+let continue_driving = false
 
 radio.onReceivedString(function (receivedString) {
     // Receive signals from other MB
@@ -18,11 +22,10 @@ radio.setTransmitPower(8)
 //serial.redirectToUSB()
 
 
-// Code for buggy motion ¿¿?? <--------- Xueqi
 function stop_buggy() {
     basic.showString("S")
+    basic.pause(10000)
     pause(6000)
-
     // Notify departure disease analysis
     radio.sendString("notify=departure") 
 }
@@ -35,7 +38,38 @@ function take_pictures(curr_plant_dn: number) {
     basic.showNumber(curr_plant_dn)
 }
 
+function turnLeft(degrees: number): void {
+    let timeToWait = (degrees * MICROSEC_IN_A_SEC) / DEGREES_PER_SEC;
+    pins.servoWritePin(AnalogPin.P1, 45);
+    pins.servoWritePin(AnalogPin.P2, 45);
+    control.waitMicros(timeToWait);
+    pins.servoWritePin(AnalogPin.P1, 90);
+    pins.servoWritePin(AnalogPin.P2, 90);
+}
+
+function driveForward(distance: number): void {
+    let timeToWait2 = (distance * MICROSEC_IN_A_SEC) / DISTANCE_PER_SEC;
+    pins.servoWritePin(AnalogPin.P1, 0);
+    pins.servoWritePin(AnalogPin.P2, 180);
+    control.waitMicros(timeToWait2);
+    pins.servoWritePin(AnalogPin.P1, 90);
+    pins.servoWritePin(AnalogPin.P2, 90);
+}
+
 
 basic.forever(function () {
-    // Code for buggy motion <--------- Xueqi
+
+    input.onButtonPressed(Button.A, function () {
+        continue_driving = true
+        while (continue_driving) {
+            basic.pause(500) //pauses buggy to move hand
+            driveForward(200)
+            turnLeft(80)
+        }
+    })
+    
+    input.onButtonPressed(Button.B, function () {
+        continue_driving = false
+    })
+    
 })
