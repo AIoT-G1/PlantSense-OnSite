@@ -38,7 +38,7 @@ def automateCommandSensorDataCollection():
         # Take note that Microbits have max limit of 19 char (String); radio.sendString()
 
         # Format data
-        data = "'timestamp': ${input.runningTime}, 'type': 'plant_node_data', 'plant_node_id': ${control.deviceSerialNumber()}, 'readings': {'soil_moisture': ${sm_reading}, 'light_sensor': ${light_reading}, 'onboard_temperature': ${onboard_temp_reading}}}
+        # data = "'timestamp': ${input.runningTime}, 'type': 'plant_node_data', 'plant_node_id': ${control.deviceSerialNumber()}, 'readings': {'soil_moisture': ${sm_reading}, 'light_sensor': ${light_reading}, 'onboard_temperature': ${onboard_temp_reading}}}
 
         # Wait for Plant Node Microbits to respond with Sensor Data
         strSensorValues = waitResponse()
