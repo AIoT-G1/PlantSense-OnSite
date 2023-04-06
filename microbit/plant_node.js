@@ -56,8 +56,6 @@ basic.forever(function () {
 
   // on-board temperature reading
   f_onboard_temperature();
-
-  f_send_sensor_data_to_hub();
 });
 
 function f_show_serial_number() {
@@ -65,29 +63,6 @@ function f_show_serial_number() {
   if (input.buttonIsPressed(Button.A)) {
     basic.showString(control.deviceSerialNumber().toString());
   }
-}
-
-/**
- * UPLOAD/SEND TO MICROBIT HUB
- */
-function f_send_sensor_data_to_hub() {
-  data =
-    "{'timestamp': " +
-    input.runningTime +
-    "" +
-    ", 'type': 'plant_node_data'" +
-    ", 'plant_node_id' : " +
-    control.deviceSerialNumber() +
-    ", 'readings': { 'soil_moisture' : " +
-    sm_reading +
-    ", 'light_sensor' : " +
-    light_reading +
-    ", 'onboard_temperature' : " +
-    onboard_temp_reading +
-    "}}";
-
-  // Send data over Radio
-  radio.sendString("collect=" + data);
 }
 
 /**
@@ -187,7 +162,8 @@ radio.onReceivedString(function (receivedString) {
    */
   // Plant Microbits (M1, M2, ...)
   if (receivedString.includes("sensor=")) {
-    //ignore (Plant microbits do not need to communicate with each other)
+    // Received command from Edge Server (RPi), get sensor readings and push northbound!
+    f_send_sensor_data_to_hub();
   }
 
   // Buggy Microbit (notify)
@@ -218,4 +194,16 @@ radio.onReceivedString(function (receivedString) {
 function randomWait() {
   let rd_wait = Math.random() * 100;
   pause(rd_wait);
+}
+
+/**
+ * UPLOAD/SEND SENSOR DATA TO MICROBIT HUB (By default, only do so when commanded from RPi/Fog/Edge server)
+ */
+function f_send_sensor_data_to_hub() {
+  data = `{'timestamp': ${input.runningTime}, 'type': 'plant_node_data', 'plant_node_id': ${control.deviceSerialNumber()}, 'readings': { 'soil_moisture': ${sm_reading}, 'light_sensor': ${light_reading}, 'onboard_temperature': ${onboard_temp_reading}}}`;
+
+  // Send data over Radio (Max 19 Chars per packet, so repeatedly send, RPi will accumulate).
+  radio.sendString("collect=" + data);
+
+  basic.showString("S");
 }
