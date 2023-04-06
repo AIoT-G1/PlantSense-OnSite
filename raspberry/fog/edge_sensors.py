@@ -1,7 +1,14 @@
 # Based on Lect 7: src10.py
 
+# Commands: python3 -m serial.tools.list_ports
+# python3 edge_sensors.py
+
 import serial
 import time
+
+# For scheduling task execution (pip install schedule)
+# https://stackoverflow.com/questions/22715086/scheduling-python-script-to-run-every-hour-accurately
+import schedule
 
 
 def sendCommand(command):
@@ -18,7 +25,38 @@ def waitResponse():
     return response
 
 
+def automateCommandSensorDataCollection():
+    # Automate Plant Sensor Data Collection (Send Commands)
+    sendCommand('cmd:' + "sensor=")
+    print('Sending Command to Plant Nodes for data collection.')
+    print('Finished sending command to all micro:bit devices...')
+
+    strSensorValues = ''
+
+    while strSensorValues == None or len(strSensorValues) <= 0:
+
+        # Take note that Microbits have max limit of 19 char (String); radio.sendString()
+
+        # Format data
+        data = "'timestamp': ${input.runningTime}, 'type': 'plant_node_data', 'plant_node_id': ${control.deviceSerialNumber()}, 'readings': {'soil_moisture': ${sm_reading}, 'light_sensor': ${light_reading}, 'onboard_temperature': ${onboard_temp_reading}}}
+
+        # Wait for Plant Node Microbits to respond with Sensor Data
+        strSensorValues = waitResponse()
+        time.sleep(0.1)
+
+    listSensorValues = strSensorValues.split(',')
+
+    print(listSensorValues)
+
+    for sensorValue in listSensorValues:
+
+        print(sensorValue)
+
+
 try:
+
+    # Retrieve User's Settings: sensorInterval from DB
+    sensorIntervals = 15
 
     # Change port name as required (Run in RPi terminal "python3 -m serial.tools.list_ports")
     print("Listening on /dev/ttyACM0... Press CTRL+C to exit")
@@ -46,33 +84,44 @@ try:
 
                 print('Connected to micro:bit device {}...'.format(mb))
 
+            # Get sensorIntervals User Settings from DB (i.e. 30mins), and schedule accordingly
+            schedule.every(sensorIntervals).minutes.do(
+                automateCommandSensorDataCollection)
+
+            # Run one-time command for retrieving sensor data
+            automateCommandSensorDataCollection()
+
             while True:
 
-                txCommand = input(
-                    'Do you want to transmit command to micro:bit (Y/n) = ')
+                # Automatic Get Plant Node Sensor Readings (Automate Sending Command)
+                schedule.run_pending()
 
-                if txCommand == 'Y':
+                # Commented Manual Transmit Command (Does not fit PlantSense Automation Use Case)
+                # txCommand = input(
+                #     'Do you want to transmit command to micro:bit (Y/n) = ')
 
-                    commandToTx = input('Enter command to send = ')
-                    sendCommand('cmd:' + commandToTx)
-                    print('Finished sending command to all micro:bit devices...')
+                # if txCommand == 'Y':
 
-                    if commandToTx.startswith('sensor='):
+                #     commandToTx = input('Enter command to send = ')
+                #     sendCommand('cmd:' + commandToTx)
+                #     print('Finished sending command to all micro:bit devices...')
 
-                        strSensorValues = ''
+                #     if commandToTx.startswith('sensor='):
 
-                        while strSensorValues == None or len(strSensorValues) <= 0:
+                #         strSensorValues = ''
 
-                            strSensorValues = waitResponse()
-                            time.sleep(0.1)
+                #         while strSensorValues == None or len(strSensorValues) <= 0:
 
-                        listSensorValues = strSensorValues.split(',')
+                #             strSensorValues = waitResponse()
+                #             time.sleep(0.1)
 
-                        for sensorValue in listSensorValues:
+                #         listSensorValues = strSensorValues.split(',')
 
-                            print(sensorValue)
+                #         for sensorValue in listSensorValues:
 
-                time.sleep(0.1)
+                #             print(sensorValue)
+
+        time.sleep(0.1)
 
 except KeyboardInterrupt:
 
