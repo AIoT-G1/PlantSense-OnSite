@@ -1,7 +1,15 @@
 # Based on Lect 7: src10.py
 
+import RPi.GPIO as GPIO
 import serial
 import time
+
+GPIO.setwarnings(False)
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(5, GPIO.OUT) # solenoid valve for ___
+GPIO.setup(17, GPIO.OUT) # solenoid valve for ___
+GPIO.setup(18, GPIO.OUT) # water pump
 
 
 def sendCommand(command):
@@ -16,6 +24,33 @@ def waitResponse():
     response = response.decode('utf-8').strip()
 
     return response
+
+def waterPlant(sensorValues):
+
+    for reading in sensorValues:
+
+        data = reading.split(":")
+
+        node_id = data[5]
+        soil_moisture = data[8]
+
+        if soil_moisture < 690:
+
+            if node_id == 18243620: 
+                print()
+                pin = 17
+            elif node_id == 1775143845:
+                pin = 5
+
+            GPIO.output(pin, 1)
+            sleep(1)
+            GPIO.output(18, 1)
+
+            sleep(3)    
+
+            GPIO.output(18, 0)
+            sleep(1)
+            GPIO.output(pin, 0)
 
 
 try:
@@ -69,8 +104,7 @@ try:
                         listSensorValues = strSensorValues.split(',')
 
                         for sensorValue in listSensorValues:
-
-                            print(sensorValue)
+                            waterPlant(sensorValue)
 
                 time.sleep(0.1)
 
