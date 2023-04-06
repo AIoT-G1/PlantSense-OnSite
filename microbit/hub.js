@@ -1,3 +1,8 @@
+// LEGENDS
+// STATE 1 = Handshake
+// STATE 2 = Idle
+// STATE 3 = Received Command
+
 /**
  * RPI<->HUB: RECEIVED FROM SERIAL COMMS (RASPBERRY PI - EDGE SERVER)
  */
@@ -5,6 +10,7 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
   data = serial.readLine();
   if (data == "handshake") {
     if (state == 0) {
+      // 1: HANDSHAKE
       state = 1;
       radio.sendString("handshake");
       handshakeStartTime = input.runningTime();
@@ -12,6 +18,7 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
   } else if (data.includes("cmd:")) {
     if (state == 2) {
       if (data.includes("cmd:sensor=")) {
+        // 3: IN COMMAND PROCESS
         state = 3;
         commandStartTime = input.runningTime();
         sensorValues = [];
@@ -66,6 +73,7 @@ basic.forever(function () {
 
   if (state == 1) {
     if (input.runningTime() - handshakeStartTime > 10 * 1000) {
+      // 2: IDLE MODE
       state = 2;
       response = "";
       for (let microbitDevice of microbitDevices) {
@@ -88,6 +96,8 @@ basic.forever(function () {
         }
       }
       serial.writeLine("" + response);
+
+      // 2: IDLE MODE
       state = 2;
     }
   }
@@ -101,8 +111,8 @@ function f_show_serial_number() {
 }
 
 function f_show_state() {
-  //Testing
-  if (input.buttonIsPressed(Button.B)) {
+  //Default
+  // if (input.buttonIsPressed(Button.B)) {
     basic.showNumber(state);
-  }
+  // }
 }
