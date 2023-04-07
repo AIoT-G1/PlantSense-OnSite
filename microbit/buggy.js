@@ -1,10 +1,11 @@
 let buf_us: string[] = []
 let MICROSEC_IN_A_SEC = 1000000
 let DISTANCE_PER_SEC = 100
-let DEGREES_PER_SEC = 220
+let DEGREES_PER_SEC = 165
 let continue_driving = false
 
 radio.onReceivedString(function (receivedString) {
+
     // Receive signals from other MB
     if (receivedString.includes('notify=')) {
         buf_us = receivedString.split('=')
@@ -28,7 +29,7 @@ function stop_buggy() {
     basic.pause(10000)
     pause(6000)
     // Notify departure disease analysis
-    radio.sendString("notify=departure") 
+    radio.sendString("notify=departure")
 }
 
 // Code for disease detection <--------- Rashini
@@ -64,13 +65,13 @@ basic.forever(function () {
         continue_driving = true
         while (continue_driving) {
             basic.pause(500) //pauses buggy to move hand
-            driveForward(200)
-            turnLeft(80)
+            driveForward(350)
+            turnLeft(90)
         }
     })
-    
+
     input.onButtonPressed(Button.B, function () {
         continue_driving = false
     })
-    
+
 })
