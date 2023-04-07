@@ -2,6 +2,7 @@ import socket
 import _thread as thread
 from paho.mqtt import client as mqttClient
 import ssl
+import datetime
 
 
 mqtt = None
@@ -22,7 +23,7 @@ def forwardEdgeSensorsData(data):
 	print('From Edge Sensors -> {}'.format(data))
 	r = mqtt.publish("nusIS5451Plantsense-sensor_data", str(data))
  
-	r = mqtt.publish("nusIS5451Plantsense-last_watered")
+	r = mqtt.publish("nusIS5451Plantsense-last_watered", str(data))
  
  
  
@@ -82,6 +83,9 @@ if __name__ == '__main__':
 	mqtt.tls_set(ca_certs="certs/mosquitto.org.crt", certfile="certs/client.crt", keyfile="certs/client.key", tls_version=ssl.PROTOCOL_TLSv1_2)
 	mqtt.connect("test.mosquitto.org", 8883)
 	mqtt.loop_start()
+ 
+	# Test --- REMOVE
+	mqtt.publish("nusIS5451Plantsense-last_watered", datetime.datetime.now())
 
     # Socket connection
 	socketServer()
