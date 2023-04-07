@@ -57,8 +57,7 @@ def waterPlant(sensorValues):
 
         if soil_moisture < 690:
 
-            if node_id == 18243620:
-                print()
+            if node_id == 18243620: #microbit id
                 pin = 17
             elif node_id == 1775143845:
                 pin = 5
@@ -72,6 +71,8 @@ def waterPlant(sensorValues):
             GPIO.output(18, 0)
             sleep(1)
             GPIO.output(pin, 0)
+        
+        socketClient(datetime.datetime.now)
 
 
 def automateCommandSensorDataCollection():
@@ -257,6 +258,8 @@ try:
                             waterPlant(sensorValue)
 
                             print(sensorValue)
+
+                        waterPlant(sensorValues=listSensorValues)
 
                         # Send data to cloud
                         socketClient(strSensorValues)

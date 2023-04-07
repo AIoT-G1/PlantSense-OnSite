@@ -20,7 +20,10 @@ def onMessage(client, userdata, msg):
 def forwardEdgeSensorsData(data):
     # Forwards data from rhub to cloud
 	print('From Edge Sensors -> {}'.format(data))
-	r = mqtt.publish("nus_IS5451_e0966285_sensor_data", str(data))
+	r = mqtt.publish("nusIS5451Plantsense-sensor_data", str(data))
+ 
+ 
+ 
 	if r[0] == 0:
 		print("Message sent successfully")
 	else:
