@@ -6,6 +6,7 @@
 # For scheduling task execution (pip install schedule)
 # https://stackoverflow.com/questions/22715086/scheduling-python-script-to-run-every-hour-accurately
 import schedule
+import datetime
 
 import serial
 import time
@@ -71,14 +72,9 @@ def automateCommandSensorDataCollection():
     strSensorValues = ''
 
     while strSensorValues == None or len(strSensorValues) <= 0:
-
-        # Take note that Microbits have max limit of 19 char (String); radio.sendString()
-
-        # Format data
-        # data = "'timestamp': ${input.runningTime}, 'type': 'plant_node_data', 'plant_node_id': ${control.deviceSerialNumber()}, 'readings': {'soil_moisture': ${sm_reading}, 'light_sensor': ${light_reading}, 'onboard_temperature': ${onboard_temp_reading}}}
-
         # Wait for Plant Node Microbits to respond with Sensor Data
         strSensorValues = waitResponse()
+
         time.sleep(0.1)
 
     listSensorValues = strSensorValues.split(',')
@@ -88,6 +84,42 @@ def automateCommandSensorDataCollection():
     for sensorValue in listSensorValues:
 
         print(sensorValue)
+
+        # Take note that Microbits have max limit of 19 char (String); radio.sendString()
+
+        # Identified by 'col='
+        # Sample incoming data format
+        # c=${truncateSerialNumber};${sm_reading};${light_reading}
+
+        # # Perform necessary changes to Data Format
+        plantSensorValues = sensorValue.split('c=')
+
+        # Get Serial Number + Soil Moisture + Light Sensor readings
+        temp = plantSensorValues[1].split(';')
+
+        detectedSerialNumber = temp[0]
+        sm_reading = temp[1]
+        light_reading = temp[2]
+
+        print(detectedSerialNumber)
+        print(sm_reading)
+        print(light_reading)
+
+        # Now Format into
+        #  data = `{'timestamp': ${input.runningTime}, 'type': 'plant_node_data', 'plant_node_id': ${control.deviceSerialNumber()}, 'readings': { 'soil_moisture': ${sm_reading}, 'light_sensor': ${light_reading}, 'onboard_temperature': ${onboard_temp_reading}}}`;
+
+        now = datetime.datetime.now()
+        timestamp = str(now)
+
+        index = [idx for idx, s in enumerate(
+            listMicrobitDevices) if detectedSerialNumber in s][0]
+
+        fullSerialNumber = listMicrobitDevices[index]
+
+        formattedData = "{'timestamp': "+timestamp + ", 'type': 'plant_node_data', 'plant_node_id':" + fullSerialNumber+", 'readings': { 'soil_moisture': " + \
+            sm_reading+", 'light_sensor': "+light_reading+", 'temperature': "+"}}"
+
+        print(formattedData)
 
 
 try:
