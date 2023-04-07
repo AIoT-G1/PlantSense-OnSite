@@ -72,7 +72,8 @@ def waterPlant(sensorValues):
             sleep(1)
             GPIO.output(pin, 0)
 
-        socketClient(str({'plant_node_id':node_id, 'timestamp': datetime.datetime.now()}))
+        socketClient("nusIS5451Plantsense-last_watered=" +
+                     str({'plant_node_id': node_id, 'timestamp': datetime.datetime.now()}))
 
 
 def automateCommandSensorDataCollection():
@@ -134,15 +135,15 @@ def automateCommandSensorDataCollection():
 
         fullSerialNumber = listMicrobitDevices[index]
 
-        formattedData = "{'timestamp': " + timestamp + ", 'timestamp_short': "+timestamp_short + ", 'type': 'plant_node_data', 'plant_node_id':" + \
+        formattedData = "nusIS5451Plantsense-sensor_data={'timestamp': " + timestamp + ", 'timestamp_short': "+timestamp_short + ", 'type': 'plant_node_data', 'plant_node_id':" + \
             fullSerialNumber + ", 'moisture': " + sm_reading + ", 'light': " + \
             light_reading + ", 'temp': " + temp + ", 'humidity': " + humidity + "}"
 
         # CLI
         print(formattedData)
-        
+
         # Push to Cloud Database Server
-        
+        socketClient(formattedData)
 
 
 def serviceClient(clientSocket, address):
