@@ -8,6 +8,8 @@
 import schedule
 import datetime
 
+import socket
+import _thread as thread
 import serial
 import time
 import RPi.GPIO as GPIO
@@ -122,7 +124,56 @@ def automateCommandSensorDataCollection():
         print(formattedData)
 
 
+def serviceClient(clientSocket, address):
+
+    print("Connection from: " + str(address))
+
+    while True:
+        data = clientSocket.recv(1024).decode('utf-8')
+        if not data:
+            break
+
+        # Do whatever with data
+        print(str(data))
+
+        data = 'ACK'
+        clientSocket.send(data.encode('utf-8'))
+
+    clientSocket.close()
+
+
+def socketServer():
+    host = socket.gethostname()
+    port = 8889
+
+    socketServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    socketServer.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    socketServer.bind((host, port))
+
+    while True:
+        print("Listening to new connections...")
+        socketServer.listen()
+        clientSocket, address = socketServer.accept()
+        # s.setblocking(False)
+        thread.start_new_thread(serviceClient, (clientSocket, address))
+
+
+def socketClient(data):
+    host = socket.gethostname()
+    port = 8888  # Cloud Relay listen at port 8888
+
+    socketClient = socket.socket()
+    socketClient.connect((host, port))
+    socketClient.send(data.encode('utf-8'))
+
+    response = socketClient.recv(1024).decode('utf-8')
+    print('Cloud relay -> ' + response)
+    socketClient.close()
+
+
 try:
+
+    thread.start_new_thread(socketServer)
 
     # Retrieve User's Settings: sensorInterval from DB
     sensorIntervals = 15
@@ -190,6 +241,9 @@ try:
                             waterPlant(sensorValue)
 
                             print(sensorValue)
+
+                        # Send data to cloud
+                        socketClient(strSensorValues)
 
         time.sleep(0.1)
 
