@@ -46,6 +46,13 @@ radio.onReceivedString(function (receivedString) {
       sensorValues.push(receivedString);
     }
   }
+
+  // from Plant Nodes (c for collection)
+  if (receivedString.includes("c=")) {
+    if (state == 3) {
+      sensorValues.push(receivedString);
+    }
+  }
 });
 
 let response = "";
