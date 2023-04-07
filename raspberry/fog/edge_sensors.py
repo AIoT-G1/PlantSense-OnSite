@@ -19,7 +19,7 @@ import smbus2
 import bme280
 
 port = 1
-address = 0x77 # May differ. check with 'i2c -y 1'
+address = 0x77  # May differ. check with 'i2c -y 1'
 bus = smbus2.SMBus(port)
 bme280.load_calibration_params(bus, address)
 
@@ -57,7 +57,7 @@ def waterPlant(sensorValues):
 
         if soil_moisture < 690:
 
-            if node_id == 18243620: #microbit id
+            if node_id == 18243620:  # microbit id
                 pin = 17
             elif node_id == 1775143845:
                 pin = 5
@@ -71,8 +71,8 @@ def waterPlant(sensorValues):
             GPIO.output(18, 0)
             sleep(1)
             GPIO.output(pin, 0)
-        
-        socketClient(datetime.datetime.now)
+
+        socketClient(str({'plant_node_id':node_id, 'timestamp': datetime.datetime.now()}))
 
 
 def automateCommandSensorDataCollection():
@@ -138,7 +138,11 @@ def automateCommandSensorDataCollection():
             fullSerialNumber + ", 'moisture': " + sm_reading + ", 'light': " + \
             light_reading + ", 'temp': " + temp + ", 'humidity': " + humidity + "}"
 
+        # CLI
         print(formattedData)
+        
+        # Push to Cloud Database Server
+        
 
 
 def serviceClient(clientSocket, address):
@@ -190,7 +194,7 @@ def socketClient(data):
 
 try:
 
-    # thread.start_new_thread(socketServer)
+    thread.start_new_thread(socketServer, ())
 
     # Retrieve User's Settings: sensorInterval from DB
     sensorIntervals = 15
