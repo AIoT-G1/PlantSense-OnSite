@@ -22,6 +22,8 @@ def forwardEdgeSensorsData(data):
 	print('From Edge Sensors -> {}'.format(data))
 	r = mqtt.publish("nusIS5451Plantsense-sensor_data", str(data))
  
+	r = mqtt.publish("nusIS5451Plantsense-last_watered")
+ 
  
  
 	if r[0] == 0:
