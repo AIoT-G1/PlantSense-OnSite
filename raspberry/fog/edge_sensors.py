@@ -7,6 +7,7 @@
 # https://stackoverflow.com/questions/22715086/scheduling-python-script-to-run-every-hour-accurately
 import schedule
 import datetime
+import json
 
 import socket
 import _thread as thread
@@ -73,7 +74,7 @@ def waterPlant(sensorValues):
             GPIO.output(pin, 0)
 
         socketClient("nusIS5451Plantsense-last_watered=" +
-                     str({'plant_node_id': node_id, 'timestamp': datetime.datetime.now()}))
+                     str({"plant_node_id": node_id, "timestamp": datetime.datetime.now()}))
 
 
 def automateCommandSensorDataCollection():
@@ -128,22 +129,27 @@ def automateCommandSensorDataCollection():
 
         now = datetime.datetime.now()
         timestamp = str(now)
-        timestamp_short = now.strftime("%Y%m%d%H:%M:%S")
+        timestamp_short = now.strftime("%Y%m%d %H%M%S")
 
         index = [idx for idx, s in enumerate(
             listMicrobitDevices) if detectedSerialNumber in s][0]
 
         fullSerialNumber = listMicrobitDevices[index]
+        
+        formattedPlantSensorData = "nusIS5451Plantsense-plant_sensor_data=" + str(json.dumps({"timestamp": timestamp, "timestamp_short": timestamp_short, "type": "plant_node_data", "plant_node_id": fullSerialNumber, "moisture": sm_reading, "light": light_reading}))
 
-        formattedData = "nusIS5451Plantsense-sensor_data={'timestamp': " + timestamp + ", 'timestamp_short': "+timestamp_short + ", 'type': 'plant_node_data', 'plant_node_id':" + \
-            fullSerialNumber + ", 'moisture': " + sm_reading + ", 'light': " + \
-            light_reading + ", 'temp': " + temp + ", 'humidity': " + humidity + "}"
-
+        formattedSystemSensorData = "nusIS5451Plantsense-system_sensor_data=" + str(json.dumps({"timestamp": timestamp, "water_level": 1, "temp": temp, "humidity": humidity}))
+        
         # CLI
-        print(formattedData)
+        print(formattedPlantSensorData)
+        print(formattedSystemSensorData)
 
         # Push to Cloud Database Server
-        socketClient(formattedData)
+        # nusIS5451Plantsense-plant_sensor_data
+        socketClient(formattedPlantSensorData)
+
+        # nusIS5451Plantsense-system_sensor_data (temp, humidity)
+        socketClient(formattedSystemSensorData)
 
 
 def serviceClient(clientSocket, address):
@@ -203,6 +209,7 @@ try:
     # Change port name as required (Run in RPi terminal "python3 -m serial.tools.list_ports")
     print("Listening on /dev/ttyACM0... Press CTRL+C to exit")
     ser = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=1)
+    #ser_tank = serial.Serial(port='/dev/ttyACM1', baudrate=115200, timeout=1)
 
     # Handshaking
     sendCommand('handshake')
@@ -226,6 +233,11 @@ try:
 
                 print('Connected to micro:bit device {}...'.format(mb))
 
+                # Add connected micro:bit device onto MongoDB (Online should check)
+                socketClient("nusIS5451Plantsense-plant_info=" +
+                             str(json.dumps({"plant_node_id": mb, "name": "", "description": "",
+                                 "disease": "", "type": "", "photo_url": "", "water_history": []})))
+
             # Get sensorIntervals User Settings from DB (i.e. 30mins), and schedule accordingly
             schedule.every(sensorIntervals).minutes.do(
                 automateCommandSensorDataCollection)
@@ -239,25 +251,25 @@ try:
                 schedule.run_pending()
 
                 # Manual Commands
-                txCommand = input(
+                txCommand=input(
                     'Do you want to transmit command to micro:bit (Y/n) = ')
 
                 if txCommand == 'Y':
 
-                    commandToTx = input('Enter command to send = ')
+                    commandToTx=input('Enter command to send = ')
                     sendCommand('cmd:' + commandToTx)
                     print('Finished sending command to all micro:bit devices...')
 
                     if commandToTx.startswith('sensor='):
 
-                        strSensorValues = ''
+                        strSensorValues=''
 
                         while strSensorValues == None or len(strSensorValues) <= 0:
 
-                            strSensorValues = waitResponse()
+                            strSensorValues=waitResponse()
                             time.sleep(0.1)
 
-                        listSensorValues = strSensorValues.split(',')
+                        listSensorValues=strSensorValues.split(',')
 
                         for sensorValue in listSensorValues:
                             waterPlant(sensorValue)
