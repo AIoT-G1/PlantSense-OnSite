@@ -14,9 +14,18 @@ import serial
 import time
 import RPi.GPIO as GPIO
 
+# BME280
+import smbus2
+import bme280
+
+port = 1
+address = 0x77 # May differ. check with 'i2c -y 1'
+bus = smbus2.SMBus(port)
+bme280.load_calibration_params(bus, address)
 
 GPIO.setwarnings(False)
 
+# Pin Setup
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(5, GPIO.OUT)  # solenoid valve for ___
 GPIO.setup(17, GPIO.OUT)  # solenoid valve for ___
@@ -107,19 +116,26 @@ def automateCommandSensorDataCollection():
         print(sm_reading)
         print(light_reading)
 
+        # Get readings from BME280
+        bme280Sensor = bme280.sample(bus, address)
+        temp = str(bme280Sensor.temperature)
+        humidity = str(bme280Sensor.humidity)
+
         # Now Format into
         #  data = `{'timestamp': ${input.runningTime}, 'type': 'plant_node_data', 'plant_node_id': ${control.deviceSerialNumber()}, 'readings': { 'soil_moisture': ${sm_reading}, 'light_sensor': ${light_reading}, 'onboard_temperature': ${onboard_temp_reading}}}`;
 
         now = datetime.datetime.now()
         timestamp = str(now)
+        timestamp_short = now.strftime("%Y%m%d%H:%M:%S")
 
         index = [idx for idx, s in enumerate(
             listMicrobitDevices) if detectedSerialNumber in s][0]
 
         fullSerialNumber = listMicrobitDevices[index]
 
-        formattedData = "{'timestamp': "+timestamp + ", 'type': 'plant_node_data', 'plant_node_id':" + fullSerialNumber+", 'readings': { 'soil_moisture': " + \
-            sm_reading+", 'light_sensor': "+light_reading+", 'temperature': "+"}}"
+        formattedData = "{'timestamp': " + timestamp + ", 'timestamp_short': "+timestamp_short + ", 'type': 'plant_node_data', 'plant_node_id':" + \
+            fullSerialNumber + ", 'moisture': " + sm_reading + ", 'light': " + \
+            light_reading + ", 'temp': " + temp + ", 'humidity': " + humidity + "}"
 
         print(formattedData)
 
@@ -173,7 +189,7 @@ def socketClient(data):
 
 try:
 
-    thread.start_new_thread(socketServer)
+    # thread.start_new_thread(socketServer)
 
     # Retrieve User's Settings: sensorInterval from DB
     sensorIntervals = 15
