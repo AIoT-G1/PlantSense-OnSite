@@ -2,6 +2,7 @@ import socket
 import _thread as thread
 from paho.mqtt import client as mqttClient
 import ssl
+import datetime
 
 
 mqtt = None
@@ -82,10 +83,12 @@ if __name__ == '__main__':
     mqtt.on_connect = onConnect
     mqtt.on_message = onMessage
 
-    mqtt.tls_set(ca_certs="certs/mosquitto.org.crt", certfile="certs/client.crt",
-                 keyfile="certs/client.key", tls_version=ssl.PROTOCOL_TLSv1_2)
+    mqtt.tls_set(ca_certs="certs/mosquitto.org.crt", certfile="certs/client.crt", keyfile="certs/client.key", tls_version=ssl.PROTOCOL_TLSv1_2)
     mqtt.connect("test.mosquitto.org", 8883)
     mqtt.loop_start()
+
+    # Test --- REMOVE
+    mqtt.publish("nusIS5451Plantsense-last_watered", datetime.datetime.now())
 
     # Socket connection
     socketServer()
