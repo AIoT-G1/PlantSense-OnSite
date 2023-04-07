@@ -6,6 +6,8 @@ let BUGGY_MAX_DISTANCE = 80;
 let buggy_on_move = 1;
 let buggy_is_here = 0;
 
+let truncateSerialNumber = control.deviceSerialNumber().toString().slice(0, 7);
+
 /**
  * External THREE SENSORS; Ultrasonic, Soil moisture, Light sensor
  * Onboard Microbit Sensor: Measures Ambient Temperature (We'll use both Onboard's & BME280's)
@@ -200,10 +202,19 @@ function randomWait() {
  * UPLOAD/SEND SENSOR DATA TO MICROBIT HUB (By default, only do so when commanded from RPi/Fog/Edge server)
  */
 function f_send_sensor_data_to_hub() {
-  data = `{'timestamp': ${input.runningTime}, 'type': 'plant_node_data', 'plant_node_id': ${control.deviceSerialNumber()}, 'readings': { 'soil_moisture': ${sm_reading}, 'light_sensor': ${light_reading}, 'onboard_temperature': ${onboard_temp_reading}}}`;
+  // data = `{'timestamp': ${input.runningTime}, 'type': 'plant_node_data', 'plant_node_id': ${control.deviceSerialNumber()}, 'readings': { 'soil_moisture': ${sm_reading}, 'light_sensor': ${light_reading}, 'onboard_temperature': ${onboard_temp_reading}}}`;
+
+  // serial number: truncate to reduce
+
+  //Total used 11 char (left 8)
+  //include statement: 'col=': max 4 char
+  //sm_reading: max 4 char
+  //light_reading: max 3 char
+
+  data = `${truncateSerialNumber};${sm_reading};${light_reading}`;
 
   // Send data over Radio (Max 19 Chars per packet, so repeatedly send, RPi will accumulate).
-  radio.sendString("collect=" + data);
+  radio.sendString("c=" + data);
 
   basic.showString("S");
 }
