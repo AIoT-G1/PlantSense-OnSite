@@ -30,7 +30,7 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
     if (data == "handshake") {
         if (serial_connected == 0) {
             serial_connected = 1
-            serial_("handshake")
+            serial.writeLine("handshake")
             basic.showString("S")
         }
     }
