@@ -260,6 +260,7 @@ try:
                     sendCommand('cmd:' + commandToTx)
                     print('Finished sending command to all micro:bit devices...')
 
+                    # Plant Node Sensors
                     if commandToTx.startswith('sensor='):
 
                         strSensorValues=''
@@ -281,7 +282,7 @@ try:
                         # Send data to cloud
                         socketClient(strSensorValues)
                         
-                    # Manual Schedule (Assist Testing)
+                    # Manual Schedule (Assist Testing) for Debugging
                     if commandToTx.startswith('manual='):
                         
                         # Run one-time command for retrieving sensor data
