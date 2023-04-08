@@ -3,6 +3,7 @@ let MICROSEC_IN_A_SEC = 1000000;
 let DISTANCE_PER_SEC = 100;
 let DEGREES_PER_SEC = 165;
 let continue_driving = false;
+uart.init(baudrate=115200)
 
 radio.onReceivedString(function (receivedString) {
   // Receive signals from other MB
@@ -26,7 +27,11 @@ function stop_buggy() {
   continue_driving = false;
   basic.pause(300); //in milliseconds, pause for 10 minutes
   // Notify departure disease analysis
+  uart.write('predict')
   radio.sendString("notify=departure");
+  data = ser.readline().decode().strip()
+    if data=='move':
+        continue_driving = true
 }
 
 // Code for disease detection <--------- Rashini
