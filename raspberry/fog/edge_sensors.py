@@ -304,11 +304,11 @@ try:
                                  "disease": "", "type": "", "photo_url": "", "water_history": []})))
 
             # Get sensorIntervals User Settings from DB (i.e. 15mins), and schedule accordingly
-            schedule.every(sensorIntervals).minutes.do(
-                automateCommandSensorDataCollection)
+            # schedule.every(sensorIntervals).minutes.do(
+            #     automateCommandSensorDataCollection)
 
-            # Run one-time command for retrieving sensor data (Initial Bootup)
-            automateCommandSensorDataCollection()
+            # # Run one-time command for retrieving sensor data (Initial Bootup)
+            # automateCommandSensorDataCollection()
             
             schedule.every(sensorIntervals).minutes.do(
                 automateCommandWaterTank)
