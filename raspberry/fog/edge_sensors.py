@@ -172,6 +172,33 @@ def waterPlant(fullSerialNumber, sm_reading):
         # Insert into "watering_history" of plant_data collection based on plant_node_id
         socketClient("nusIS5451Plantsense-last_watered=" +
                      str({"plant_node_id": node_id, "timestamp": datetime.datetime.now()}))
+        
+def automateCommandWaterTank():
+     # Automate Plant Sensor Data Collection (Send Commands)
+    sendCommand('cmd:' + "water_tank=")
+    print('Sending command to water tank for data collection.')
+
+    waterTankValues = ''
+
+    while waterTankValues == None:
+        # Wait for Plant Node Microbits to respond with Sensor Data
+        waterTankValues = waitResponse()
+        time.sleep(0.1)
+
+    print(waterTankValues)
+
+    now = datetime.datetime.now()
+    timestamp = str(now)
+    timestamp_short = now.strftime("%Y%m%d %H%M%S")
+    tank_level = waterTankValues.split('=')[1]        
+    formattedWaterTankData = "nusIS5451Plantsense-system_sensor_data=" + str(json.dumps(
+        {"timestamp": timestamp, 
+         "timestamp_short": timestamp_short,
+         "action": "update_water_tank",
+         "tank_level": tank_level}))
+
+    # nusIS5451Plantsense-system_sensor_data (water_level)
+    socketClient(formattedWaterTankData)
 
 def serviceClient(clientSocket, address):
 
@@ -226,6 +253,7 @@ try:
 
     # Retrieve User's Settings: sensorInterval from DB
     sensorIntervals = 15
+    tankSensorIntervals = 5
 
     # Change port name as required (Run in RPi terminal "python3 -m serial.tools.list_ports")
     print("Listening on /dev/ttyACM0... Press CTRL+C to exit")
@@ -260,12 +288,15 @@ try:
                              str(json.dumps({"plant_node_id": mb, "name": "", "description": "",
                                  "disease": "", "type": "", "photo_url": "", "water_history": []})))
 
-            # Get sensorIntervals User Settings from DB (i.e. 30mins), and schedule accordingly
+            # Get sensorIntervals User Settings from DB (i.e. 15mins), and schedule accordingly
             schedule.every(sensorIntervals).minutes.do(
                 automateCommandSensorDataCollection)
 
             # Run one-time command for retrieving sensor data (Initial Bootup)
             automateCommandSensorDataCollection()
+            
+            schedule.every(sensorIntervals).minutes.do(
+                automateCommandWaterTank())
 
             while True:
 
