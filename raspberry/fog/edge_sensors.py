@@ -49,16 +49,16 @@ def waitHubResponse():
 
 
 # SerialTank (ttyACM1)
-# def sendTankCommand(command):
+def sendTankCommand(command):
 
-#     command = command + '\n'
-#     serialTank.write(str.encode(command))
+    command = command + '\n'
+    serialTank.write(str.encode(command))
 
 
-# def waitTankResponse():
+def waitTankResponse():
 
-#     response = serialTank.readline()
-#     response = response.decode('utf-8').strip()
+    response = serialTank.readline()
+    response = response.decode('utf-8').strip()
 
 #     return response
 
@@ -206,7 +206,6 @@ def automateCommandWaterTank():
 
     now = datetime.datetime.now()
     timestamp = str(now)
-    timestamp_short = now.strftime("%Y%m%d %H%M%S")
     tank_level = waterTankValues.split('=')[1]        
     formattedWaterTankData = "nusIS5451Plantsense-water_tank=" + str(json.dumps(
         {"timestamp": timestamp, 
@@ -273,11 +272,11 @@ try:
     # Change port name as required (Run in RPi terminal "python3 -m serial.tools.list_ports")
     print("Listening on /dev/ttyACM0... Press CTRL+C to exit")
     serialHub = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=1)
-    # serialTank = serial.Serial(port='/dev/ttyACM1', baudrate=115200, timeout=1)
+    serialTank = serial.Serial(port='/dev/ttyACM1', baudrate=115200, timeout=1)
 
     # Handshaking
     sendHubCommand('handshake')
-    # sendTankCommand('handshake')
+    sendTankCommand('handshake')
 
     strMicrobitDevices = ''
 
