@@ -21,8 +21,9 @@ function get_water_level() {
     basic.showNumber(capacity)
 
     if (serial_connected == 1) {
+        response = "water_tank=" + convertToText(capacity)
         //serial.writeLine("water_tank=" + convertToText(capacity))
-        serial.writeLine("water_tank=AAAAAAAAAAAAAAAAAAAAAAA")
+        serial.writeLine("" + response)
         basic.showString("T")
     }
 }
