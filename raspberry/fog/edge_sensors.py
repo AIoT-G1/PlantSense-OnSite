@@ -185,7 +185,7 @@ def waterPlant(fullSerialNumber):
         
 def automateCommandWaterTank():
      # Automate Plant Sensor Data Collection (Send Commands)
-    sendTankCommand('cmd:' + "water_tank=")
+    sendTankCommand('cmd:' + "water_tank")
     print('Sending command to water tank for data collection.')
 
     waterTankValues = ''
@@ -201,10 +201,9 @@ def automateCommandWaterTank():
     timestamp = str(now)
     timestamp_short = now.strftime("%Y%m%d %H%M%S")
     tank_level = waterTankValues.split('=')[1]        
-    formattedWaterTankData = "nusIS5451Plantsense-system_sensor_data=" + str(json.dumps(
+    formattedWaterTankData = "nusIS5451Plantsense-water_tank=" + str(json.dumps(
         {"timestamp": timestamp, 
          "timestamp_short": timestamp_short,
-         "action": "update_water_tank",
          "tank_level": tank_level}))
 
     # nusIS5451Plantsense-system_sensor_data (water_level)
