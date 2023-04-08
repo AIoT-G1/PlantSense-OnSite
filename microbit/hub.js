@@ -22,6 +22,9 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
         state = 3;
         commandStartTime = input.runningTime();
         sensorValues = [];
+
+        // Increment
+        numOfCommands = numOfCommands + 1;
       }
       buffer = data.split(":");
       radio.sendString("" + buffer[1]);
@@ -51,6 +54,9 @@ radio.onReceivedString(function (receivedString) {
   if (receivedString.includes("c=")) {
     if (state == 3) {
       sensorValues.push(receivedString);
+
+      // Decrement
+      if (numOfCommands > 0) numOfCommands = numOfCommands - 1;
     }
   }
 });
@@ -63,7 +69,6 @@ let commandStartTime = 0;
 let handshakeStartTime = 0;
 let data = "";
 let buffer: string[] = [];
-let numOfCommands = 0; // For Detecting Number of Commands Received
 handshakeStartTime = 0;
 commandStartTime = 0;
 radio.setGroup(8);
@@ -71,6 +76,9 @@ radio.setTransmitSerialNumber(true);
 radio.setTransmitPower(7);
 serial.redirectToUSB();
 basic.showIcon(IconNames.Yes);
+
+// Should increment as command received
+let numOfCommands = 0; // For Detecting Number of Commands Received
 
 /**
  * BASIC FOREVER LOOP
@@ -106,7 +114,9 @@ basic.forever(function () {
       serial.writeLine("" + response);
 
       // 2: IDLE MODE
-      state = 2;
+      if (numOfCommands <= 0) {
+        state = 2;
+      }
     }
   }
 });
@@ -121,6 +131,6 @@ function f_show_serial_number() {
 function f_show_state() {
   //Default
   // if (input.buttonIsPressed(Button.B)) {
-    basic.showNumber(state);
+  basic.showNumber(state);
   // }
 }
