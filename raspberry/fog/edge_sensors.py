@@ -142,12 +142,11 @@ def automateCommandSensorDataCollection():
 
 def requestRainPredictionResultFromCloud(fullSerialNumber, sm_reading):
     # Rain Prediction WILL NOT BE PERFORMED here, but on Cloud.py Server based on regular intervals (i.e. 30mins) which will determine where there is a need to water plant or not (based on Soil Moisture readings). Based on rain prediction (True/False or Yes/No), Cloud.py will send a command through CloudRelay.py > Edge_sensors.py: SendWaterCommand(). At any time, Edge Sensor can request rainPredictionOutput from Cloud.py 
-    waitforresponse
     
-    boolIsNotGoingToRain = true
+    boolIsNotGoingToRain = True
     
     # If-Else Water Plant Algo: Check against Soil Moisture sensor readings.
-    if (boolIsGoingToRain and sm_reading < 500):
+    if (boolIsNotGoingToRain and sm_reading < 500):
         waterPlant(fullSerialNumber, sm_reading)
 
 def waterPlant(fullSerialNumber, sm_reading):
@@ -160,13 +159,13 @@ def waterPlant(fullSerialNumber, sm_reading):
             pin = 5 # Need to hardcode
 
         GPIO.output(pin, 1)
-        sleep(1)
+        time.sleep(1)
         GPIO.output(18, 1)
 
-        sleep(3)
+        time.sleep(3)
 
         GPIO.output(18, 0)
-        sleep(1)
+        time.sleep(1)
         GPIO.output(pin, 0)
 
         # Insert into "watering_history" of plant_data collection based on plant_node_id
@@ -175,14 +174,14 @@ def waterPlant(fullSerialNumber, sm_reading):
         
 def automateCommandWaterTank():
      # Automate Plant Sensor Data Collection (Send Commands)
-    sendCommand('cmd:' + "water_tank=")
+    sendTankCommand('cmd:' + "water_tank=")
     print('Sending command to water tank for data collection.')
 
     waterTankValues = ''
 
     while waterTankValues == None:
         # Wait for Plant Node Microbits to respond with Sensor Data
-        waterTankValues = waitResponse()
+        waterTankValues = waitTankResponse()
         time.sleep(0.1)
 
     print(waterTankValues)
