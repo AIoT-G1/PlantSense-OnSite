@@ -1,5 +1,3 @@
-let value = 0
-let capacity = 0
 let serial_connected = 0
 let ULTRASONIC_POSITION = 40 //cm
 let MAX_TANK_HEIGHT = 30 //cm
@@ -15,11 +13,11 @@ basic.forever(function () {
 })
 
 function get_water_level(){
-    value = grove.measureInCentimetersV2(DigitalPin.P0)
-    capacity = (ULTRASONIC_POSITION - value) / MAX_TANK_HEIGHT
+    let value = grove.measureInCentimetersV2(DigitalPin.P0)
+    let capacity = (ULTRASONIC_POSITION - value) / MAX_TANK_HEIGHT
     basic.showNumber(capacity)
 
-    if (connected == 1) {
+    if (serial_connected == 1) {
         data ='"' + convertToText(capacity) + '"'
         serial.writeLine('water_tank='+ data)
         basic.showString("T")
@@ -33,6 +31,11 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
             serial_connected = 1
             serial_("handshake")
             basic.showString("S")
+        }
+    }
+    else {
+        if (data.split(':')[1] == "water_tank") {
+            get_water_level()
         }
     }
 })
