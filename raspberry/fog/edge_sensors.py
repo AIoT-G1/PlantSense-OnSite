@@ -33,7 +33,7 @@ GPIO.setup(17, GPIO.OUT)  # solenoid valve for ___
 GPIO.setup(18, GPIO.OUT)  # water pump
 
 
-# SerialHub
+# SerialHub (ttyACM0)
 def sendHubCommand(command):
 
     command = command + '\n'
@@ -48,19 +48,19 @@ def waitHubResponse():
     return response
 
 
-# SerialTank
-def sendTankCommand(command):
+# SerialTank (ttyACM1)
+# def sendTankCommand(command):
 
-    command = command + '\n'
-    serialTank.write(str.encode(command))
+#     command = command + '\n'
+#     serialTank.write(str.encode(command))
 
 
-def waitTankResponse():
+# def waitTankResponse():
 
-    response = serialTank.readline()
-    response = response.decode('utf-8').strip()
+#     response = serialTank.readline()
+#     response = response.decode('utf-8').strip()
 
-    return response
+#     return response
 
 # Every 15 minutes (Default)
 def automateCommandSensorDataCollection():
@@ -76,7 +76,10 @@ def automateCommandSensorDataCollection():
         strSensorValues = waitHubResponse()
 
         time.sleep(0.1)
-
+        
+    print("Received from Micro:bit")
+    print(strSensorValues)
+    
     listSensorValues = strSensorValues.split(',')
 
     print(listSensorValues)
@@ -146,12 +149,14 @@ def requestRainPredictionResultFromCloud(fullSerialNumber, sm_reading):
     boolIsNotGoingToRain = True
     
     # If-Else Water Plant Algo: Check against Soil Moisture sensor readings.
-    if (boolIsNotGoingToRain and sm_reading < 500):
-        waterPlant(fullSerialNumber, sm_reading)
+    if (boolIsNotGoingToRain and int(sm_reading) < 500):
+        waterPlant(fullSerialNumber)
 
-def waterPlant(fullSerialNumber, sm_reading):
+def waterPlant(fullSerialNumber):
 
         node_id = fullSerialNumber
+        
+        pin = 17 # default
 
         if node_id == "-814970655": # microbit id: M1
             pin = 17 # Need to hardcode
@@ -257,11 +262,11 @@ try:
     # Change port name as required (Run in RPi terminal "python3 -m serial.tools.list_ports")
     print("Listening on /dev/ttyACM0... Press CTRL+C to exit")
     serialHub = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=1)
-    serialTank = serial.Serial(port='/dev/ttyACM1', baudrate=115200, timeout=1)
+    # serialTank = serial.Serial(port='/dev/ttyACM1', baudrate=115200, timeout=1)
 
     # Handshaking
     sendHubCommand('handshake')
-    sendTankCommand('handshake')
+    # sendTankCommand('handshake')
 
     strMicrobitDevices = ''
 
@@ -295,7 +300,7 @@ try:
             automateCommandSensorDataCollection()
             
             schedule.every(sensorIntervals).minutes.do(
-                automateCommandWaterTank())
+                automateCommandWaterTank)
 
             while True:
 
@@ -309,13 +314,14 @@ try:
                 if txCommand == 'Y':
 
                     commandToTx=input('Enter command to send = ')
-                    sendHubCommand('[Hub] cmd:' + commandToTx)
-                    print('Finished sending hub command to all micro:bit devices...')
+                    # sendHubCommand('cmd:' + commandToTx)
 
                     # Plant Node Sensors
                     if commandToTx.startswith('sensor='):
                         # Run one-time command for retrieving sensor data
                         automateCommandSensorDataCollection()
+                        
+                        print('Finished sending hub command to all micro:bit devices...')
 
         time.sleep(0.1)
 
@@ -324,7 +330,7 @@ except KeyboardInterrupt:
     if serialHub.is_open:
         serialHub.close()
         
-    if serialTank.is_open:
-        serialTank.close()
+    # if serialTank.is_open:
+    #     serialTank.close()
 
     print("Program terminated!")
