@@ -272,7 +272,7 @@ try:
 
     # Change port name as required (Run in RPi terminal "python3 -m serial.tools.list_ports")
     print("[Hub] Listening on /dev/ttyACM0.. Press CTRL+C to exit")
-    serialHub = serial.Serial(port='/dev/t1yACM0', baudrate=115200, timeout=1)
+    serialHub = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=1)
     
     print("[Tank] Listening on /dev/ttyACM1... Press CTRL+C to exit")
     serialTank = serial.Serial(port='/dev/ttyACM1', baudrate=115200, timeout=1)
