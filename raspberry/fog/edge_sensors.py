@@ -311,6 +311,9 @@ try:
             
             schedule.every(sensorIntervals).minutes.do(
                 automateCommandWaterTank)
+            
+            # Run one-time command for retrieving sensor data (Initial Bootup)
+            automateCommandWaterTank()
 
             while True:
 
@@ -332,6 +335,13 @@ try:
                         automateCommandSensorDataCollection()
                         
                         print('Finished sending hub command to all micro:bit devices...')
+
+                    # Water Tank node
+                    if commandToTx.startswith('tank='):
+                        # Run one-time command for retrieving tank data
+                        automateCommandWaterTank()
+                        
+                        print('Finished sending tank command...')
 
         time.sleep(0.1)
 
