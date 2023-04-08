@@ -140,14 +140,14 @@ def automateCommandSensorDataCollection():
     humidity = str(bme280Sensor.humidity)
     
     formattedWeatherSensorData = "nusIS5451Plantsense-weather=" + str(json.dumps({"action": "add_weather_data", "timestamp": timestamp, "temp": temp, "humidity": humidity}))
-    formattedWaterTankData = "nusIS5451Plantsense-water_tank=" + str(json.dumps({"timestamp": timestamp, "water_level": str(1)}))
+    # formattedWaterTankData = "nusIS5451Plantsense-water_tank=" + str(json.dumps({"timestamp": timestamp, "water_level": str(1)}))
     
     print(formattedWeatherSensorData)
-    print(formattedWaterTankData)
+    # print(formattedWaterTankData)
     
     # nusIS5451Plantsense-system_sensor_data (temp, humidity)
     socketClient(formattedWeatherSensorData)
-    socketClient(formattedWaterTankData)
+    # socketClient(formattedWaterTankData)
     
     # Request from Cloud to conduct Rain Predictions Algo. (Should return True/False)
     requestRainPredictionResultFromCloud(fullSerialNumber, sm_reading)
@@ -197,8 +197,8 @@ def automateCommandWaterTank():
 
     waterTankValues = ''
 
-    while waterTankValues == None:
-        # Wait for Plant Node Microbits to respond with Sensor Data
+    while waterTankValues == None or len(waterTankValues) <= 0:
+        # Wait for Tank Node Microbits to respond with Sensor Data
         waterTankValues = waitTankResponse()
         time.sleep(0.1)
 
