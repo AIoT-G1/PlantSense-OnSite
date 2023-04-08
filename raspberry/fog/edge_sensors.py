@@ -84,7 +84,8 @@ def automateCommandSensorDataCollection():
         
     listSensorValues = response.split(',')
 
-    print(listSensorValues)
+    print("listSensorValues")
+    print(str(listSensorValues))
     
     now = datetime.datetime.now()
     timestamp = str(now)
@@ -117,16 +118,16 @@ def automateCommandSensorDataCollection():
         # Now Format into
         #  data = `{'timestamp': ${input.runningTime}, 'type': 'plant_node_data', 'plant_node_id': ${control.deviceSerialNumber()}, 'readings': { 'soil_moisture': ${sm_reading}, 'light_sensor': ${light_reading}, 'onboard_temperature': ${onboard_temp_reading}}}`;
 
-        print(str(listMicrobitDevices))
+        # print(str(listMicrobitDevices))
         
-        index = [idx for idx, s in enumerate(
-            listMicrobitDevices) if detectedSerialNumber in s][0]
+        # index = [idx for idx, s in enumerate(
+        #     listMicrobitDevices) if detectedSerialNumber in s][0]
         
-        print(str(index))
+        # print(str(index))
         
-        fullSerialNumber = listMicrobitDevices[index]
+        # fullSerialNumber = listMicrobitDevices[index]
         
-        formattedPlantSensorData = "nusIS5451Plantsense-plant_sensor_data=" + str(json.dumps({"timestamp": timestamp, "timestamp_short": timestamp_short, "type": "plant_node_data", "plant_node_id": fullSerialNumber, "moisture": sm_reading, "light": light_reading}))
+        formattedPlantSensorData = "nusIS5451Plantsense-plant_sensor_data=" + str(json.dumps({"timestamp": timestamp, "timestamp_short": timestamp_short, "type": "plant_node_data", "plant_node_id": detectedSerialNumber, "moisture": sm_reading, "light": light_reading}))
 
         
         # CLI
@@ -152,20 +153,20 @@ def automateCommandSensorDataCollection():
     # socketClient(formattedWaterTankData)
     
     # Request from Cloud to conduct Rain Predictions Algo. (Should return True/False)
-    requestRainPredictionResultFromCloud(fullSerialNumber, sm_reading)
+    requestRainPredictionResultFromCloud(detectedSerialNumber, sm_reading)
 
-def requestRainPredictionResultFromCloud(fullSerialNumber, sm_reading):
+def requestRainPredictionResultFromCloud(detectedSerialNumber, sm_reading):
     # Rain Prediction WILL NOT BE PERFORMED here, but on Cloud.py Server based on regular intervals (i.e. 30mins) which will determine where there is a need to water plant or not (based on Soil Moisture readings). Based on rain prediction (True/False or Yes/No), Cloud.py will send a command through CloudRelay.py > Edge_sensors.py: SendWaterCommand(). At any time, Edge Sensor can request rainPredictionOutput from Cloud.py 
     
     boolIsNotGoingToRain = True
     
     # If-Else Water Plant Algo: Check against Soil Moisture sensor readings.
     if (boolIsNotGoingToRain and int(sm_reading) < 500):
-        waterPlant(fullSerialNumber)
+        waterPlant(detectedSerialNumber)
 
-def waterPlant(fullSerialNumber):
+def waterPlant(detectedSerialNumber):
 
-        node_id = fullSerialNumber
+        node_id = detectedSerialNumber
         
         pin = 17 # default
 
