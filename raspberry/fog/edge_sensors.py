@@ -351,7 +351,7 @@ except KeyboardInterrupt:
     if serialHub.is_open:
         serialHub.close()
         
-    # if serialTank.is_open:
-    #     serialTank.close()
+    if serialTank.is_open:
+        serialTank.close()
 
     print("Program terminated!")
