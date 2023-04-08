@@ -192,7 +192,7 @@ def waterPlant(fullSerialNumber):
         
 def automateCommandWaterTank():
      # Automate Plant Sensor Data Collection (Send Commands)
-    sendTankCommand('cmd:' + "water_tank")
+    sendTankCommand('cmd:water_tank')
     print('Sending command to water tank for data collection.')
 
     waterTankValues = ''
