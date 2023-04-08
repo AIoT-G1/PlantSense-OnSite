@@ -75,24 +75,11 @@ def serialCommand(receiver, command):
         if serial_conn.is_open:
             serial_conn.close()
 
-    
-def sendCommand(serial_conn, command):
-
-    print("command:" + command)
-    serial_conn.write(str.encode(command + '\n'))
-
-
-def waitResponse(serial_conn):
-
-    response = serial_conn.readline()
-    response = response.decode('utf-8').strip()
-
-    return response
 
 # Every 15 minutes (Default)
 def automateCommandSensorDataCollection():
     # Automate Plant Sensor Data Collection (Send Commands)
-    response = serialCommand("hub","sensor=")
+    response = serialCommand("hub","sensor")
         
     listSensorValues = response.split(',')
 

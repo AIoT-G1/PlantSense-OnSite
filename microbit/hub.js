@@ -17,14 +17,11 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
     }
   } else if (data.includes("cmd:")) {
     if (state == 2) {
-      if (data.includes("cmd:sensor=")) {
+      if (data.includes("cmd:sensor")) {
         // 3: IN COMMAND PROCESS
         state = 3;
         commandStartTime = input.runningTime();
         sensorValues = [];
-
-        // Increment
-        numOfCommands = numOfCommands + 1;
       }
 
       if (data.includes("cmd:water_tank")) {
@@ -60,9 +57,6 @@ radio.onReceivedString(function (receivedString) {
   if (receivedString.includes("c=")) {
     if (state == 3) {
       sensorValues.push(receivedString);
-
-      // Decrement
-      if (numOfCommands > 0) numOfCommands = numOfCommands - 1;
     }
   }
 });
@@ -83,9 +77,6 @@ radio.setTransmitSerialNumber(true);
 radio.setTransmitPower(7);
 serial.redirectToUSB();
 basic.showIcon(IconNames.Yes);
-
-// Should increment as command received
-let numOfCommands = 0; // For Detecting Number of Commands Received
 
 /**
  * BASIC FOREVER LOOP
@@ -119,11 +110,7 @@ basic.forever(function () {
         }
       }
       serial.writeLine("" + response);
-
-      // 2: IDLE MODE
-      if (numOfCommands <= 0) {
-        state = 2;
-      }
+      state = 2
     }
   }
 });
