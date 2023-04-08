@@ -12,7 +12,7 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
     if (state == 0) {
       // 1: HANDSHAKE
       state = 1;
-      radio.sendString("handshake");
+      radio.sendString("handshake_plant");
       handshakeStartTime = input.runningTime();
     }
   } else if (data.includes("cmd:")) {
@@ -63,6 +63,7 @@ let commandStartTime = 0;
 let handshakeStartTime = 0;
 let data = "";
 let buffer: string[] = [];
+let numOfCommands = 0; // For Detecting Number of Commands Received
 handshakeStartTime = 0;
 commandStartTime = 0;
 radio.setGroup(8);

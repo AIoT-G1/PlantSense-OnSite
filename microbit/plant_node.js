@@ -159,7 +159,7 @@ radio.setTransmitPower(8);
 
 radio.onReceivedString(function (receivedString) {
   // Hub handshake procedure
-  if (receivedString.includes("handshake")) {
+  if (receivedString.includes("handshake_plant")) {
     // Pauses during random interval to avoid collision
     randomWait();
 

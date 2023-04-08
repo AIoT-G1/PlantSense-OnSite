@@ -108,11 +108,6 @@ def automateCommandSensorDataCollection():
         print(sm_reading)
         print(light_reading)
 
-        # Get readings from BME280
-        bme280Sensor = bme280.sample(bus, address)
-        temp = str(bme280Sensor.temperature)
-        humidity = str(bme280Sensor.humidity)
-
         # Now Format into
         #  data = `{'timestamp': ${input.runningTime}, 'type': 'plant_node_data', 'plant_node_id': ${control.deviceSerialNumber()}, 'readings': { 'soil_moisture': ${sm_reading}, 'light_sensor': ${light_reading}, 'onboard_temperature': ${onboard_temp_reading}}}`;
 
@@ -120,28 +115,39 @@ def automateCommandSensorDataCollection():
         timestamp = str(now)
         timestamp_short = now.strftime("%Y%m%d %H%M%S")
 
+        print(str(listMicrobitDevices))
+        
         index = [idx for idx, s in enumerate(
             listMicrobitDevices) if detectedSerialNumber in s][0]
-
+        
+        print(str(index))
+        
         fullSerialNumber = listMicrobitDevices[index]
         
         formattedPlantSensorData = "nusIS5451Plantsense-plant_sensor_data=" + str(json.dumps({"timestamp": timestamp, "timestamp_short": timestamp_short, "type": "plant_node_data", "plant_node_id": fullSerialNumber, "moisture": sm_reading, "light": light_reading}))
 
-        formattedSystemSensorData = "nusIS5451Plantsense-system_sensor_data=" + str(json.dumps({"timestamp": timestamp, "water_level": 1, "temp": temp, "humidity": humidity}))
         
         # CLI
         print(formattedPlantSensorData)
-        print(formattedSystemSensorData)
 
         # Push to Cloud Database Server
         # nusIS5451Plantsense-plant_sensor_data
         socketClient(formattedPlantSensorData)
-
-        # nusIS5451Plantsense-system_sensor_data (temp, humidity)
-        socketClient(formattedSystemSensorData)
-        
-        # Request from Cloud to conduct Rain Predictions Algo. (Should return True/False)
-        requestRainPredictionResultFromCloud(fullSerialNumber, sm_reading)
+    
+    # Get readings from BME280
+    bme280Sensor = bme280.sample(bus, address)
+    temp = str(bme280Sensor.temperature)
+    humidity = str(bme280Sensor.humidity)
+    
+    formattedSystemSensorData = "nusIS5451Plantsense-system_sensor_data=" + str(json.dumps({"timestamp": timestamp, "water_level": 1, "temp": temp, "humidity": humidity}))
+    
+    print(formattedSystemSensorData)
+    
+    # nusIS5451Plantsense-system_sensor_data (temp, humidity)
+    socketClient(formattedSystemSensorData)
+    
+    # Request from Cloud to conduct Rain Predictions Algo. (Should return True/False)
+    requestRainPredictionResultFromCloud(fullSerialNumber, sm_reading)
 
 def requestRainPredictionResultFromCloud(fullSerialNumber, sm_reading):
     # Rain Prediction WILL NOT BE PERFORMED here, but on Cloud.py Server based on regular intervals (i.e. 30mins) which will determine where there is a need to water plant or not (based on Soil Moisture readings). Based on rain prediction (True/False or Yes/No), Cloud.py will send a command through CloudRelay.py > Edge_sensors.py: SendWaterCommand(). At any time, Edge Sensor can request rainPredictionOutput from Cloud.py 
