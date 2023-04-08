@@ -25,11 +25,8 @@ let us_cooldown = 0;
 
 let buf_us: string[] = [];
 
-// Soil Moisture (sm) reading
-let sm_reading = 0;
-
-// Light Sensor reading
-let light_reading = 0;
+let moisture = 0
+let light = 0
 
 // On-board Ambient Temperature
 let onboard_temp_reading = 0;
@@ -110,17 +107,6 @@ function f_light_sensor() {
   // }
 }
 
-/**
- * SOIL MOISTURE SENSOR (PIN 2 CLIP)
- */
-function f_soil_moisture() {
-  sm_reading = pins.analogReadPin(AnalogPin.P2);
-
-  //Testing
-  if (input.buttonIsPressed(Button.B)) {
-    basic.showString("" + sm_reading);
-  }
-}
 
 /**
  * ON-BOARD TEMPERATURE SENSOR
@@ -203,7 +189,9 @@ function f_send_sensor_data_to_hub() {
   //light_reading: max 3 char
 
   // analog pin P2 -> moisture, analog pin P1 -> light
-  data = `${truncateSerialNumber};${pins.analogReadPin(AnalogPin.P2)};${pins.analogReadPin(AnalogPin.P1)}`;
+  moisture = pins.analogReadPin(AnalogPin.P2)
+  light = pins.analogReadPin(AnalogPin.P1)
+  data = `${truncateSerialNumber};${moisture};${light}`;
 
   // Send data over Radio (Max 19 Chars per packet, so repeatedly send, RPi will accumulate).
   radio.sendString("c=" + data);
