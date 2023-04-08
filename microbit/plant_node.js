@@ -39,33 +39,17 @@ let onboard_temp_reading = 0;
  */
 
 let data = "";
-basic.showNumber(control.deviceSerialNumber());
-
 /**
  * BASIC FOREVER LOOP
  */
 basic.forever(function () {
-  f_show_serial_number();
-
   // ultrasonic reading
   f_ultrasonic();
-
-  // soil moisture reading
-  f_soil_moisture();
-
-  // light sensor reading
-  f_light_sensor();
-
-  // on-board temperature reading
-  f_onboard_temperature();
 });
 
-function f_show_serial_number() {
-  //Testing
-  if (input.buttonIsPressed(Button.A)) {
-    basic.showString(control.deviceSerialNumber().toString());
-  }
-}
+input.onButtonPressed(Button.A, function () {
+  basic.showString(control.deviceSerialNumber().toString());
+})
 
 /**
  * ULTRASONIC RANGER SENSOR (PIN 0)
@@ -218,7 +202,8 @@ function f_send_sensor_data_to_hub() {
   //sm_reading: max 4 char
   //light_reading: max 3 char
 
-  data = `${truncateSerialNumber};${sm_reading};${light_reading}`;
+  // analog pin P2 -> moisture, analog pin P1 -> light
+  data = `${truncateSerialNumber};${pins.analogReadPin(AnalogPin.P2)};${pins.analogReadPin(AnalogPin.P1)}`;
 
   // Send data over Radio (Max 19 Chars per packet, so repeatedly send, RPi will accumulate).
   radio.sendString("c=" + data);
