@@ -23,6 +23,12 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
         commandStartTime = input.runningTime();
         sensorValues = [];
       }
+
+      if (data.includes("cmd:water_tank")) {
+        state = 3;
+        commandStartTime = input.runningTime();
+        waterLevel = "";
+      }
       buffer = data.split(":");
       radio.sendString("" + buffer[1]);
     }
@@ -58,6 +64,7 @@ radio.onReceivedString(function (receivedString) {
 let response = "";
 let microbitDevices: string[] = [];
 let sensorValues: string[] = [];
+let waterLevel = ""
 let state = 0;
 let commandStartTime = 0;
 let handshakeStartTime = 0;

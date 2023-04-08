@@ -18,6 +18,7 @@ function get_water_level() {
     if (capacity < 0) {
         capacity = 0
     }
+    
     basic.showNumber(capacity)
 
     if (serial_connected == 1) {
