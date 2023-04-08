@@ -206,6 +206,7 @@ def automateCommandWaterTank():
 
     now = datetime.datetime.now()
     timestamp = str(now)
+    print(str(waterTankValues))
     tank_level = waterTankValues.split('=')[1]        
     formattedWaterTankData = "nusIS5451Plantsense-water_tank=" + str(json.dumps(
         {"timestamp": timestamp, 
