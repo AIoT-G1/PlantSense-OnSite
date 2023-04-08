@@ -140,7 +140,7 @@ def automateCommandSensorDataCollection():
     humidity = str(bme280Sensor.humidity)
     
     formattedWeatherSensorData = "nusIS5451Plantsense-weather=" + str(json.dumps({"action": "add_weather_data", "timestamp": timestamp, "temp": temp, "humidity": humidity}))
-    formattedWaterTankData = "nusIS5451Plantsense-water_tank=" + str(json.dumps({"timestamp": timestamp, "water_level": 1}))
+    formattedWaterTankData = "nusIS5451Plantsense-water_tank=" + str(json.dumps({"timestamp": timestamp, "water_level": str(1)}))
     
     print(formattedWeatherSensorData)
     print(formattedWaterTankData)
