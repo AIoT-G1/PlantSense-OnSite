@@ -200,9 +200,8 @@ def automateCommandWaterTank():
     while waterTankValues == None or len(waterTankValues) <= 0:
         # Wait for Tank Node Microbits to respond with Sensor Data
         waterTankValues = waitTankResponse()
+        print(str(waterTankValues))
         time.sleep(0.1)
-
-    print(waterTankValues)
 
     now = datetime.datetime.now()
     timestamp = str(now)
