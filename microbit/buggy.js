@@ -27,11 +27,7 @@ function stop_buggy() {
   continue_driving = false;
   basic.pause(300); //in milliseconds, pause for 10 minutes
   // Notify departure disease analysis
-  uart.write('predict')
-  radio.sendString("notify=departure");
-  data = ser.readline().decode().strip()
-    if data=='move':
-        continue_driving = true
+  
 }
 
 // Code for disease detection <--------- Rashini
@@ -40,6 +36,11 @@ function take_pictures(curr_plant_dn: number) {
   basic.showString("P");
   pause(300);
   basic.showNumber(curr_plant_dn);
+  uart.write('predict')
+  radio.sendString("notify=departure");
+  data = ser.readline().decode().strip()
+  if data=='move':
+        continue_driving = true
 }
 
 function turnLeft(degrees: number): void {
