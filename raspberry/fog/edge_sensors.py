@@ -83,6 +83,10 @@ def automateCommandSensorDataCollection():
     listSensorValues = strSensorValues.split(',')
 
     print(listSensorValues)
+    
+    now = datetime.datetime.now()
+    timestamp = str(now)
+    timestamp_short = now.strftime("%Y%m%d %H%M%S")
 
     for sensorValue in listSensorValues:
 
@@ -110,10 +114,6 @@ def automateCommandSensorDataCollection():
 
         # Now Format into
         #  data = `{'timestamp': ${input.runningTime}, 'type': 'plant_node_data', 'plant_node_id': ${control.deviceSerialNumber()}, 'readings': { 'soil_moisture': ${sm_reading}, 'light_sensor': ${light_reading}, 'onboard_temperature': ${onboard_temp_reading}}}`;
-
-        now = datetime.datetime.now()
-        timestamp = str(now)
-        timestamp_short = now.strftime("%Y%m%d %H%M%S")
 
         print(str(listMicrobitDevices))
         
@@ -181,10 +181,14 @@ def waterPlant(fullSerialNumber):
         GPIO.output(18, 0)
         time.sleep(1)
         GPIO.output(pin, 0)
+        
+        now = datetime.datetime.now()
+        timestamp = str(now)
+        timestamp_short = now.strftime("%Y%m%d %H%M%S")
 
         # Insert into "watering_history" of plant_data collection based on plant_node_id
-        socketClient("nusIS5451Plantsense-last_watered=" +
-                     str({"plant_node_id": node_id, "timestamp": datetime.datetime.now()}))
+        socketClient("nusIS5451Plantsense-plant_info=" +
+                     str({"action": "update_last_watered", "plant_node_id": node_id, "timestamp": timestamp}))
         
 def automateCommandWaterTank():
      # Automate Plant Sensor Data Collection (Send Commands)
@@ -206,7 +210,6 @@ def automateCommandWaterTank():
     tank_level = waterTankValues.split('=')[1]        
     formattedWaterTankData = "nusIS5451Plantsense-water_tank=" + str(json.dumps(
         {"timestamp": timestamp, 
-         "timestamp_short": timestamp_short,
          "tank_level": tank_level}))
 
     # nusIS5451Plantsense-system_sensor_data (water_level)
@@ -297,7 +300,7 @@ try:
 
                 # Add connected micro:bit device onto MongoDB (Online should check)
                 socketClient("nusIS5451Plantsense-plant_info=" +
-                             str(json.dumps({"plant_node_id": mb, "name": "", "description": "",
+                             str(json.dumps({"action": "update_plant", "plant_node_id": mb, "name": "", "description": "",
                                  "disease": "", "type": "", "photo_url": "", "water_history": []})))
 
             # Get sensorIntervals User Settings from DB (i.e. 15mins), and schedule accordingly
