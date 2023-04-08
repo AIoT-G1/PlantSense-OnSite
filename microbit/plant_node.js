@@ -1,7 +1,7 @@
 let distance = 0;
 
-let BUGGY_MIN_DISTANCE = 20;
-let BUGGY_MAX_DISTANCE = 80;
+let BUGGY_MIN_DISTANCE = 5;
+let BUGGY_MAX_DISTANCE = 30;
 
 let buggy_on_move = 1;
 let buggy_is_here = 0;
