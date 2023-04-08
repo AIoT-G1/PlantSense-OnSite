@@ -72,10 +72,12 @@ function f_show_serial_number() {
  */
 function f_ultrasonic() {
   if (buggy_on_move == 1 && us_cooldown == 0) {
+    //starting state
     if (
       input.runningTime() - us_reading_baselineTime >=
       us_reading_interval_onMove
     ) {
+      //more than 100 milliseconds have elapsed since power on
       measure_distance();
       us_reading_baselineTime = input.runningTime();
     }
@@ -90,11 +92,16 @@ function f_ultrasonic() {
 
 function measure_distance() {
   distance = grove.measureInCentimetersV2(DigitalPin.P0);
+  basic.showIcon(IconNames.Giraffe);
+
   if (BUGGY_MIN_DISTANCE < distance && distance < BUGGY_MAX_DISTANCE) {
+    //distance measured by ultrasonic sensor is within 20 to 80 cm
     radio.sendString("notify=arrival");
     buggy_is_here = 1;
     buggy_on_move = 0;
     basic.showString("A");
+  } else {
+    basic.showString("");
   }
 }
 
@@ -188,7 +195,7 @@ radio.onReceivedString(function (receivedString) {
     if (buf_us[1] == "arrival") {
       buggy_on_move = 0;
       buggy_is_here = 0;
-      basic.showString("A");
+      basic.showString("a");
     }
   }
 });

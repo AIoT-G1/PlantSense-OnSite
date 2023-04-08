@@ -24,7 +24,7 @@ radio.setTransmitPower(8);
 function stop_buggy() {
   basic.showString("S");
   continue_driving = false;
-  basic.pause(600000); //in milliseconds, pause for 10 minutes
+  basic.pause(300); //in milliseconds, pause for 10 minutes
   // Notify departure disease analysis
   radio.sendString("notify=departure");
 }
