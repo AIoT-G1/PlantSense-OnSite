@@ -50,16 +50,18 @@ def serialCommand(receiver, command):
         
         if receiver == "water_tank":
             serial_conn = serial.Serial(port=water_tank_serial_port, baudrate=115200, timeout=1)
-            
-        sendCommand(serial_conn, 'cmd:' + command)
+        
+        # Send command
+        print(str(serial_conn)) 
+        serial_conn.write(str.encode(command + '\n'))
         
         print("Sending command: " + command + " to " + receiver)
 
+        # Wait for response
         response = ''
-
         while response == None or len(response) <= 0:
             # Wait for Plant Node Microbits to respond with Sensor Data
-            response = waitResponse(serial_conn)
+            response = serial_conn.readline().decode('utf-8').strip()
 
             time.sleep(0.1)
             
@@ -77,8 +79,7 @@ def serialCommand(receiver, command):
 def sendCommand(serial_conn, command):
 
     print("command:" + command)
-    command = command + '\n'
-    serial_conn.write(str.encode(command))
+    serial_conn.write(str.encode(command + '\n'))
 
 
 def waitResponse(serial_conn):
