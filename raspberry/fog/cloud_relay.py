@@ -87,8 +87,5 @@ if __name__ == '__main__':
     mqtt.connect("test.mosquitto.org", 8883)
     mqtt.loop_start()
 
-    # Test --- REMOVE
-    # mqtt.publish("nusIS5451Plantsense-last_watered", datetime.datetime.now())
-
     # Socket connection
     socketServer()

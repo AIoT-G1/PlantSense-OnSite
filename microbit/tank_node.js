@@ -20,10 +20,8 @@ function get_water_level(){
     basic.showNumber(capacity)
 
     if (connected == 1) {
-        data = "{'timestamp': " + input.runningTime + "" +
-            ", 'type': 'water_tank_data'" +
-            ", 'level': " + convertToText(capacity) + "}"
-        serial.writeLine("collect="+ data)
+        data ='"' + convertToText(capacity) + '"'
+        serial.writeLine('water_tank='+ data)
         basic.showString("T")
     }
 }
