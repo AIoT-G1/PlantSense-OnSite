@@ -53,7 +53,7 @@ def serialCommand(receiver, command):
         
         # Send command
         print(str(serial_conn)) 
-        serial_conn.write(str.encode(command + '\n'))
+        serial_conn.write(str.encode("cmd:" + command + '\n'))
         
         print("Sending command: " + command + " to " + receiver)
 
