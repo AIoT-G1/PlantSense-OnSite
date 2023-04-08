@@ -53,7 +53,7 @@ def serialCommand(receiver, command):
         
         # Send command
         print(str(serial_conn)) 
-        serial_conn.write(str.encode("cmd:" + command + '\n'))
+        serial_conn.write(str.encode(command + '\n'))
         
         print("Sending command: " + command + " to " + receiver)
 
@@ -79,7 +79,7 @@ def serialCommand(receiver, command):
 # Every 15 minutes (Default)
 def automateCommandSensorDataCollection():
     # Automate Plant Sensor Data Collection (Send Commands)
-    response = serialCommand("hub","sensor=")
+    response = serialCommand("hub","cmd:sensor=")
     time.sleep(2)
         
     listSensorValues = response.split(',')
@@ -194,7 +194,7 @@ def waterPlant(fullSerialNumber):
         
 def automateCommandWaterTank():
 
-    response = serialCommand("water_tank", 'water_tank')
+    response = serialCommand("water_tank", "cmd:water_tank")
     time.sleep(2)
     
     now = datetime.datetime.now()
