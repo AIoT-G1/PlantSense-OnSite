@@ -34,15 +34,20 @@ function take_pictures(curr_plant_dn: number) {
     basic.pause(300)
     // basic.showNumber(curr_plant_dn)
     serial.writeString("predict")
-    basic.pause(600)
-    serial_response = serial.readString()
-    basic.showString(serial_response)
+    basic.pause(300)
 
-    if (serial_response == "move") {
-        continue_driving = true
-        // basic.uart.writeString('predict')
-        radio.sendString("notify=departure")
-    }
+    serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
+        // serial_response = serial.readString()
+        serial_response = serial.readUntil(serial.delimiters(Delimiters.NewLine))
+        basic.showString("1")
+        if (serial_response == "move") {
+            gotData = true
+            radio.sendString("notify=departure")
+        }
+    })
+
+    //gotData = true
+
 }
 function turnLeft(degrees: number) {
     timeToWait = degrees * MICROSEC_IN_A_SEC / DEGREES_PER_SEC
@@ -53,6 +58,7 @@ function turnLeft(degrees: number) {
     pins.servoWritePin(AnalogPin.P2, 90)
 }
 let timeToWait = 0
+let gotData = false
 let serial_response = ""
 let timeToWait2 = 0
 let DEGREES_PER_SEC = 0
@@ -70,6 +76,11 @@ radio.setTransmitSerialNumber(true)
 radio.setTransmitPower(8)
 serial.redirectToUSB()
 basic.forever(function () {
+    if (gotData) {
+        driveForward(350);
+        turnLeft(90);
+    }
+
     input.onButtonPressed(Button.A, function () {
         continue_driving = true;
         while (continue_driving) {
