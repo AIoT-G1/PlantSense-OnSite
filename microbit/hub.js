@@ -17,7 +17,7 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
     }
   } else if (data.includes("cmd:")) {
     if (state == 2) {
-      if (data.includes("cmd:sensor")) {
+      if (data.includes("cmd:sensor=")) {
         // 3: IN COMMAND PROCESS
         state = 3;
         commandStartTime = input.runningTime();

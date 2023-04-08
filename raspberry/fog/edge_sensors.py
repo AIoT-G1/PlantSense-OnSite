@@ -79,7 +79,7 @@ def serialCommand(receiver, command):
 # Every 15 minutes (Default)
 def automateCommandSensorDataCollection():
     # Automate Plant Sensor Data Collection (Send Commands)
-    response = serialCommand("hub","sensor")
+    response = serialCommand("hub","sensor=")
     time.sleep(2)
         
     listSensorValues = response.split(',')
