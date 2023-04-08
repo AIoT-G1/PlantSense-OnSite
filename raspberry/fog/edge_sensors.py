@@ -33,61 +33,47 @@ GPIO.setup(17, GPIO.OUT)  # solenoid valve for ___
 GPIO.setup(18, GPIO.OUT)  # water pump
 
 
-def sendCommand(command):
+# SerialHub
+def sendHubCommand(command):
 
     command = command + '\n'
-    ser.write(str.encode(command))
+    serialHub.write(str.encode(command))
 
 
-def waitResponse():
+def waitHubResponse():
 
-    response = ser.readline()
+    response = serialHub.readline()
     response = response.decode('utf-8').strip()
 
     return response
 
 
-def waterPlant(sensorValues):
+# SerialTank
+def sendTankCommand(command):
 
-    for reading in sensorValues:
-
-        data = reading.split(":")
-
-        node_id = data[5]
-        soil_moisture = data[8]
-
-        if soil_moisture < 690:
-
-            if node_id == 18243620:  # microbit id
-                pin = 17
-            elif node_id == 1775143845:
-                pin = 5
-
-            GPIO.output(pin, 1)
-            sleep(1)
-            GPIO.output(18, 1)
-
-            sleep(3)
-
-            GPIO.output(18, 0)
-            sleep(1)
-            GPIO.output(pin, 0)
-
-        socketClient("nusIS5451Plantsense-last_watered=" +
-                     str({"plant_node_id": node_id, "timestamp": datetime.datetime.now()}))
+    command = command + '\n'
+    serialTank.write(str.encode(command))
 
 
+def waitTankResponse():
+
+    response = serialTank.readline()
+    response = response.decode('utf-8').strip()
+
+    return response
+
+# Every 15 minutes (Default)
 def automateCommandSensorDataCollection():
     # Automate Plant Sensor Data Collection (Send Commands)
-    sendCommand('cmd:' + "sensor=")
-    print('Sending Command to Plant Nodes for data collection.')
-    print('Finished sending command to all micro:bit devices...')
+    sendHubCommand('cmd:' + "sensor=")
+    print('Sending Hub Command to Plant Nodes for data collection.')
+    print('Finished sending hub command to all micro:bit devices...')
 
     strSensorValues = ''
 
     while strSensorValues == None or len(strSensorValues) <= 0:
         # Wait for Plant Node Microbits to respond with Sensor Data
-        strSensorValues = waitResponse()
+        strSensorValues = waitHubResponse()
 
         time.sleep(0.1)
 
@@ -150,7 +136,42 @@ def automateCommandSensorDataCollection():
 
         # nusIS5451Plantsense-system_sensor_data (temp, humidity)
         socketClient(formattedSystemSensorData)
+        
+        # Request from Cloud to conduct Rain Predictions Algo. (Should return True/False)
+        requestRainPredictionResultFromCloud(fullSerialNumber, sm_reading)
 
+def requestRainPredictionResultFromCloud(fullSerialNumber, sm_reading):
+    # Rain Prediction WILL NOT BE PERFORMED here, but on Cloud.py Server based on regular intervals (i.e. 30mins) which will determine where there is a need to water plant or not (based on Soil Moisture readings). Based on rain prediction (True/False or Yes/No), Cloud.py will send a command through CloudRelay.py > Edge_sensors.py: SendWaterCommand(). At any time, Edge Sensor can request rainPredictionOutput from Cloud.py 
+    waitforresponse
+    
+    boolIsNotGoingToRain = true
+    
+    # If-Else Water Plant Algo: Check against Soil Moisture sensor readings.
+    if (boolIsGoingToRain and sm_reading < 500):
+        waterPlant(fullSerialNumber, sm_reading)
+
+def waterPlant(fullSerialNumber, sm_reading):
+
+        node_id = fullSerialNumber
+
+        if node_id == "-814970655": # microbit id: M1
+            pin = 17 # Need to hardcode
+        elif node_id == "-815128158": # microbit id: M2
+            pin = 5 # Need to hardcode
+
+        GPIO.output(pin, 1)
+        sleep(1)
+        GPIO.output(18, 1)
+
+        sleep(3)
+
+        GPIO.output(18, 0)
+        sleep(1)
+        GPIO.output(pin, 0)
+
+        # Insert into "watering_history" of plant_data collection based on plant_node_id
+        socketClient("nusIS5451Plantsense-last_watered=" +
+                     str({"plant_node_id": node_id, "timestamp": datetime.datetime.now()}))
 
 def serviceClient(clientSocket, address):
 
@@ -208,17 +229,18 @@ try:
 
     # Change port name as required (Run in RPi terminal "python3 -m serial.tools.list_ports")
     print("Listening on /dev/ttyACM0... Press CTRL+C to exit")
-    ser = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=1)
-    #ser_tank = serial.Serial(port='/dev/ttyACM1', baudrate=115200, timeout=1)
+    serialHub = serial.Serial(port='/dev/ttyACM0', baudrate=115200, timeout=1)
+    serialTank = serial.Serial(port='/dev/ttyACM1', baudrate=115200, timeout=1)
 
     # Handshaking
-    sendCommand('handshake')
+    sendHubCommand('handshake')
+    sendTankCommand('handshake')
 
     strMicrobitDevices = ''
 
     while strMicrobitDevices == None or len(strMicrobitDevices) <= 0:
 
-        strMicrobitDevices = waitResponse()
+        strMicrobitDevices = waitHubResponse()
         time.sleep(0.1)
 
     strMicrobitDevices = strMicrobitDevices.split('=')
@@ -242,7 +264,7 @@ try:
             schedule.every(sensorIntervals).minutes.do(
                 automateCommandSensorDataCollection)
 
-            # Run one-time command for retrieving sensor data
+            # Run one-time command for retrieving sensor data (Initial Bootup)
             automateCommandSensorDataCollection()
 
             while True:
@@ -250,41 +272,18 @@ try:
                 # Automatic Get Plant Node Sensor Readings (Automate Sending Command)
                 schedule.run_pending()
 
-                # Manual Commands
+                # Manual Commands (Not for production, for developement ease)
                 txCommand=input(
-                    'Do you want to transmit command to micro:bit (Y/n) = ')
+                    'Do you want to transmit command to Hub micro:bit (Y/n) = ')
 
                 if txCommand == 'Y':
 
                     commandToTx=input('Enter command to send = ')
-                    sendCommand('cmd:' + commandToTx)
-                    print('Finished sending command to all micro:bit devices...')
+                    sendHubCommand('[Hub] cmd:' + commandToTx)
+                    print('Finished sending hub command to all micro:bit devices...')
 
                     # Plant Node Sensors
                     if commandToTx.startswith('sensor='):
-
-                        strSensorValues=''
-
-                        while strSensorValues == None or len(strSensorValues) <= 0:
-
-                            strSensorValues=waitResponse()
-                            time.sleep(0.1)
-
-                        listSensorValues=strSensorValues.split(',')
-
-                        for sensorValue in listSensorValues:
-                            waterPlant(sensorValue)
-
-                            print(sensorValue)
-
-                        waterPlant(sensorValues=listSensorValues)
-
-                        # Send data to cloud
-                        socketClient(strSensorValues)
-                        
-                    # Manual Schedule (Assist Testing) for Debugging
-                    if commandToTx.startswith('manual='):
-                        
                         # Run one-time command for retrieving sensor data
                         automateCommandSensorDataCollection()
 
@@ -292,7 +291,10 @@ try:
 
 except KeyboardInterrupt:
 
-    if ser.is_open:
-        ser.close()
+    if serialHub.is_open:
+        serialHub.close()
+        
+    if serialTank.is_open:
+        serialTank.close()
 
     print("Program terminated!")
