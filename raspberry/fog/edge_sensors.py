@@ -280,6 +280,12 @@ try:
 
                         # Send data to cloud
                         socketClient(strSensorValues)
+                        
+                    # Manual Schedule (Assist Testing)
+                    if commandToTx.startswith('manual='):
+                        
+                        # Run one-time command for retrieving sensor data
+                        automateCommandSensorDataCollection()
 
         time.sleep(0.1)
 
