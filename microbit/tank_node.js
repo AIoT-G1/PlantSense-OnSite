@@ -9,13 +9,13 @@ basic.showIcon(IconNames.Yes)
 basic.forever(function () {
 })
 
-function get_water_level(){
+function get_water_level() {
     let value = grove.measureInCentimetersV2(DigitalPin.P0)
     let capacity = (ULTRASONIC_POSITION - value) / MAX_TANK_HEIGHT
     basic.showNumber(capacity)
 
     if (serial_connected == 1) {
-        serial.writeLine('water_tank='+ convertToText(capacity))
+        serial.writeLine('water_tank=' + convertToText(capacity))
         basic.showString("T")
     }
 }
@@ -35,4 +35,9 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
             get_water_level()
         }
     }
+})
+input.onButtonPressed(Button.A, function() {
+    let value = grove.measureInCentimetersV2(DigitalPin.P0)
+    let capacity = (ULTRASONIC_POSITION - value) / MAX_TANK_HEIGHT
+    basic.showNumber(capacity)
 })
