@@ -139,12 +139,15 @@ def automateCommandSensorDataCollection():
     temp = str(bme280Sensor.temperature)
     humidity = str(bme280Sensor.humidity)
     
-    formattedSystemSensorData = "nusIS5451Plantsense-system_sensor_data=" + str(json.dumps({"timestamp": timestamp, "water_level": 1, "temp": temp, "humidity": humidity}))
+    formattedWeatherSensorData = "nusIS5451Plantsense-weather=" + str(json.dumps({"action": "add_weather_data", "timestamp": timestamp, "temp": temp, "humidity": humidity}))
+    formattedWaterTankData = "nusIS5451Plantsense-water_tank=" + str(json.dumps({"timestamp": timestamp, "water_level": 1}))
     
-    print(formattedSystemSensorData)
+    print(formattedWeatherSensorData)
+    print(formattedWaterTankData)
     
     # nusIS5451Plantsense-system_sensor_data (temp, humidity)
-    socketClient(formattedSystemSensorData)
+    socketClient(formattedWeatherSensorData)
+    socketClient(formattedWaterTankData)
     
     # Request from Cloud to conduct Rain Predictions Algo. (Should return True/False)
     requestRainPredictionResultFromCloud(fullSerialNumber, sm_reading)
