@@ -80,6 +80,7 @@ def serialCommand(receiver, command):
 def automateCommandSensorDataCollection():
     # Automate Plant Sensor Data Collection (Send Commands)
     response = serialCommand("hub","sensor")
+    time.sleep(2)
         
     listSensorValues = response.split(',')
 
@@ -194,6 +195,7 @@ def waterPlant(fullSerialNumber):
 def automateCommandWaterTank():
 
     response = serialCommand("water_tank", 'water_tank')
+    time.sleep(2)
     
     now = datetime.datetime.now()
     timestamp = str(now)
@@ -264,7 +266,9 @@ tankSensorIntervals = 5
 
 # Handshaking
 strMicrobitDevices = serialCommand('hub','handshake')
+time.sleep(2)
 serialCommand('water_tank','handshake')
+time.sleep(2)
 
 strMicrobitDevices = strMicrobitDevices.split('=')
 
@@ -284,11 +288,12 @@ if len(strMicrobitDevices[1]) > 0:
                                 "disease": "", "type": "", "photo_url": "", "water_history": []})))
 
         # Get sensorIntervals User Settings from DB (i.e. 15mins), and schedule accordingly
-        # schedule.every(sensorIntervals).minutes.do(
-        #     automateCommandSensorDataCollection)
+        schedule.every(sensorIntervals).minutes.do(
+             automateCommandSensorDataCollection)
 
         # # Run one-time command for retrieving sensor data (Initial Bootup)
-        # automateCommandSensorDataCollection()
+        automateCommandSensorDataCollection()
+        time.sleep(2)
         
         schedule.every(sensorIntervals).minutes.do(
             automateCommandWaterTank)
