@@ -7,10 +7,6 @@ serial.redirectToUSB()
 
 basic.showIcon(IconNames.Yes)
 basic.forever(function () {
-    // Reads water level every 30s
-    //get_water_level()
-    //pause(30000)
-    basic.showString("W")
 })
 
 function get_water_level(){
@@ -19,8 +15,7 @@ function get_water_level(){
     basic.showNumber(capacity)
 
     if (serial_connected == 1) {
-        data ='"' + convertToText(capacity) + '"'
-        serial.writeLine('water_tank='+ data)
+        serial.writeLine('water_tank='+ convertToText(capacity))
         basic.showString("T")
     }
 }
@@ -36,6 +31,7 @@ serial.onDataReceived(serial.delimiters(Delimiters.NewLine), function () {
     }
     else {
         if (data.split(':')[1] == "water_tank") {
+            basic.showString("G")
             get_water_level()
         }
     }
