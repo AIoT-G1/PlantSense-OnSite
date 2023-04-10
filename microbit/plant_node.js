@@ -171,7 +171,7 @@ radio.onReceivedString(function (receivedString) {
 });
 
 function randomWait() {
-  let rd_wait = Math.random() * 100;
+  let rd_wait = Math.random() * 500;
   pause(rd_wait);
 }
 

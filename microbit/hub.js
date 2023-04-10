@@ -82,7 +82,6 @@ basic.showIcon(IconNames.Yes);
  * BASIC FOREVER LOOP
  */
 basic.forever(function () {
-  f_show_serial_number();
   f_show_state();
 
   if (state == 1) {
