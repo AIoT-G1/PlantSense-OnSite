@@ -155,9 +155,9 @@ def automateCommandSensorDataCollection():
     # Request from Cloud to conduct Rain Predictions Algo. (Should return True/False)
     requestRainPredictionResultFromCloud(detectedSerialNumber, sm_reading)
 
-def requestRainPredictionResultFromCloud(detectedSerialNumber, sm_reading):
+def requestRainPredictionResultFromCloud(detectedSerialNumber, temp, humidity, sm_reading):
     # Rain Prediction WILL NOT BE PERFORMED here, but on Cloud.py Server based on regular intervals (i.e. 30mins) which will determine where there is a need to water plant or not (based on Soil Moisture readings). Based on rain prediction (True/False or Yes/No), Cloud.py will send a command through CloudRelay.py > Edge_sensors.py: SendWaterCommand(). At any time, Edge Sensor can request rainPredictionOutput from Cloud.py 
-    
+    socketClient("nusIS5451Plantsense-weather=" + str(json.dumps({"action": "predict", "temp": temp, "humidity": humidity})))
     boolIsNotGoingToRain = True
     
     # If-Else Water Plant Algo: Check against Soil Moisture sensor readings.
