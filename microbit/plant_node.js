@@ -96,6 +96,8 @@ radio.onReceivedString(function (receivedString) {
         // Pauses during random interval to avoid collision
         randomWait();
 
+        basic.showString("H")
+
         radio.sendString("enrol=" + control.deviceSerialNumber());
     }
 
