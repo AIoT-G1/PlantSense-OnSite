@@ -3,6 +3,7 @@ import _thread as thread
 from paho.mqtt import client as mqttClient
 import ssl
 import datetime
+import json
 
 
 mqtt = None
@@ -13,12 +14,18 @@ def onConnect(client, userdata, flags, rc):
     # mqtt.subscribe("nus_IS5451_Plantsense_global_sensor_data")
     # mqtt.subscribe("nus_IS5451_Plantsense_plant_disease")
     # mqtt.subscribe("nus_IS5451_Plantsense_buggy_state")
+    mqtt.subscribe("nusIS5451Plantsense-prediction")
 
     print("Connection ACK: " + str(rc))
 
 
 def onMessage(client, userdata, msg):
-    socketClient(msg)
+    data = json.loads(msg.payload.decode("utf-8").replace("'", "\""))
+
+    # Rain prediction from Cloud.py
+    if msg.topic.split("-")[1] == "prediction":
+        # e.g. Output values ('yes' or 'no)
+        socketClient(msg.payload.decode("utf-8").replace("'", "\""))
 
 
 def forwardEdgeSensorsData(data):
