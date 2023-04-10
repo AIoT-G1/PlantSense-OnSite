@@ -7,6 +7,10 @@ serial.redirectToUSB()
 
 basic.showIcon(IconNames.Yes)
 basic.forever(function () {
+<<<<<<< Updated upstream
+=======
+    basic.showString("W")
+>>>>>>> Stashed changes
 })
 
 function get_water_level() {

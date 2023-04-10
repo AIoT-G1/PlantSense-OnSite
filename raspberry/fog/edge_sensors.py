@@ -75,6 +75,28 @@ def serialCommand(receiver, command):
         if serial_conn.is_open:
             serial_conn.close()
 
+<<<<<<< Updated upstream
+=======
+    response = serialHub.readline()
+    response = response.decode('utf-8').strip()
+
+    return response
+
+
+# SerialTank (ttyACM1)
+def sendTankCommand(command):
+
+    command = command + '\n'
+    serialTank.write(str.encode(command))
+
+
+# def waitTankResponse():
+
+#     response = serialTank.readline()
+#     response = response.decode('utf-8').strip()
+
+#     return response
+>>>>>>> Stashed changes
 
 # Every 15 minutes (Default)
 def automateCommandSensorDataCollection():
