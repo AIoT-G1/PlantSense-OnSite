@@ -163,6 +163,7 @@ def requestRainPredictionResultFromCloud(temp, humidity):
 
     # This is only requesting, no action is done until Cloud server sends back the requested data value (i.e. 'yes' or 'no')
 
+# Retrieve Rain Prediction from Cloud, and then Water Plant if needed
 def retrievedRainPredictionFromCloud(rain_result):
     # Default
     boolIsGoingToRain = False
