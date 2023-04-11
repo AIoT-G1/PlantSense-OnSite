@@ -55,9 +55,10 @@ radio.onReceivedString(function (receivedString) {
 
   // from Plant Nodes (c for collection)
   if (receivedString.includes("c=")) {
-    if (state == 3) {
+    // if (state == 3) {
       sensorValues.push(receivedString);
-    }
+      basic.showString("R")
+    // }
   }
 });
 
@@ -108,6 +109,8 @@ basic.forever(function () {
           response = sensorValue;
         }
       }
+
+      basic.showString("" + response);
       serial.writeLine("" + response);
       state = 2
     }
