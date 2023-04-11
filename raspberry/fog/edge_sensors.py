@@ -330,7 +330,7 @@ if len(strMicrobitDevices[1]) > 0:
         automateCommandSensorDataCollection()
         time.sleep(2)
         
-        schedule.every(sensorIntervals).minutes.do(
+        schedule.every(tankSensorIntervals).minutes.do(
             automateCommandWaterTank)
         
         # Run one-time command for retrieving sensor data (Initial Bootup)
