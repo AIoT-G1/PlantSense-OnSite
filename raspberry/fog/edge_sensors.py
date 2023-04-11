@@ -36,6 +36,8 @@ GPIO.setup(18, GPIO.OUT)  # water pump
 hub_serial_port = '/dev/ttyACM0'
 water_tank_serial_port = '/dev/ttyACM1'
 
+# Dict for Rain Prediction Requests (To be added in the following format: [serialNumber] = [sm_reading], for each plant. Once rain data retrieved, remove from this dict)
+rainPredictionRequests = {}
 
 # SerialHub (ttyACM0)
 def serialCommand(receiver, command):
@@ -111,9 +113,9 @@ def automateCommandSensorDataCollection():
         sm_reading = temp[1]
         light_reading = temp[2]
 
-        print(detectedSerialNumber)
-        print(sm_reading)
-        print(light_reading)
+        # print(detectedSerialNumber)
+        # print(sm_reading)
+        # print(light_reading)
 
         # Now Format into
         #  data = `{'timestamp': ${input.runningTime}, 'type': 'plant_node_data', 'plant_node_id': ${control.deviceSerialNumber()}, 'readings': { 'soil_moisture': ${sm_reading}, 'light_sensor': ${light_reading}, 'onboard_temperature': ${onboard_temp_reading}}}`;
@@ -153,21 +155,36 @@ def automateCommandSensorDataCollection():
     # socketClient(formattedWaterTankData)
     
     # Request from Cloud to conduct Rain Predictions Algo. (Should return True/False)
-    requestRainPredictionResultFromCloud(detectedSerialNumber, sm_reading)
+    requestRainPredictionResultFromCloud(detectedSerialNumber, temp, humidity, sm_reading)
 
 def requestRainPredictionResultFromCloud(detectedSerialNumber, temp, humidity, sm_reading):
-    # Rain Prediction WILL NOT BE PERFORMED here, but on Cloud.py Server based on regular intervals (i.e. 30mins) which will determine where there is a need to water plant or not (based on Soil Moisture readings). Based on rain prediction (True/False or Yes/No), Cloud.py will send a command through CloudRelay.py > Edge_sensors.py: SendWaterCommand(). At any time, Edge Sensor can request rainPredictionOutput from Cloud.py 
-    socketClient("nusIS5451Plantsense-weather=" + str(json.dumps({"action": "predict", "temp": temp, "humidity": humidity})))
-    boolIsNotGoingToRain = True
-    
+    # Rain Prediction WILL NOT BE PERFORMED here, but on Cloud.py Server based on regular intervals (i.e. 30mins) which will determine where there is a need to water plant or not (based on Soil Moisture readings). Based on rain prediction (True/False or Yes/No), Cloud.py will send a command through CloudRelay.py > Edge_sensors.py: SendWaterCommand(). At any time, Edge Sensor can request rainPredictionOutput from Cloud.py
+    socketClient("nusIS5451Plantsense-weather=" +
+                 str(json.dumps({"action": "predict", "temp": temp, "humidity": humidity})))
+
+    # This is only requesting, no action is done until Cloud server sends back the requested data value (i.e. 'yes' or 'no')
+
+    # Add requested plant node information into rainPredictionRequests dict
+    rainPredictionRequests[detectedSerialNumber] = sm_reading
+
+def retrievedRainPredictionFromCloud(rain_result):
+    # Default
+    boolIsGoingToRain = False
+
+    if (rain_result == "yes"):
+        boolIsGoingToRain = True
+    elif (rain_result == "no"):
+        boolIsGoingToRain = False
+
     # If-Else Water Plant Algo: Check against Soil Moisture sensor readings.
-    if (boolIsNotGoingToRain and int(sm_reading) < 500):
-        waterPlant(detectedSerialNumber)
+    for plant_node_id, sm_reading in rainPredictionRequests:
+        if (not boolIsGoingToRain and int(sm_reading) < 500):
+            waterPlant(plant_node_id)
 
-def waterPlant(detectedSerialNumber):
-
-        node_id = detectedSerialNumber
-        
+    # Empty dict rainPredictionRequests
+    rainPredictionRequests = {}
+    
+def waterPlant(node_id):
         pin = 17 # default
 
         if node_id == "-814970655": # microbit id: M1
@@ -209,6 +226,7 @@ def automateCommandWaterTank():
     # nusIS5451Plantsense-system_sensor_data (water_level)
     socketClient(formattedWaterTankData)
 
+# Received from Cloud.py
 def serviceClient(clientSocket, address):
 
     print("Connection from: " + str(address))
@@ -220,6 +238,11 @@ def serviceClient(clientSocket, address):
 
         # Do whatever with data
         print(str(data))
+        
+        # Retrieved RainPrediction Response from Cloud.py
+        if (data is not None):
+            if data['rain_result'] != "":
+                retrievedRainPredictionFromCloud(data['rain_result'])
 
         data = 'ACK'
         clientSocket.send(data.encode('utf-8'))
