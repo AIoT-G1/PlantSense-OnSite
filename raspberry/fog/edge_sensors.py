@@ -106,6 +106,10 @@ def automateCommandSensorDataCollection():
     # nusIS5451Plantsense-weather (temp, humidity)
     socketClient(formattedWeatherSensorData)
     
+    
+    print("HARD CODE WATERPLANT -815128158")
+    waterPlant("-815128158")
+    
     # Send One-time Request from Cloud to conduct Rain Predictions Algo. (Should return True/False on subscribe())
     cond.acquire()
     socketClient("nusIS5451Plantsense-weather=" +
@@ -167,6 +171,7 @@ def automateCommandSensorDataCollection():
         # If-Else Water Plant Algo: Check against Soil Moisture sensor readings.
         if (boolIsGoingToRain == False and int(sm_reading) < 500):
             waterPlant(detectedSerialNumber)
+        
 
     cond.release()
 # Retrieve Rain Prediction from Cloud, and then Water Plant if needed
@@ -179,7 +184,7 @@ def retrievedRainPredictionFromCloud(result):
     elif (result == "no"):
         boolIsGoingToRain = False
     else:
-        boolIsGoingToRain = False
+        boolIsGoingToRain = False #default if error
     
     cond.release()
     print("Updated: boolIsGoingToRain = " + str(boolIsGoingToRain))
@@ -188,6 +193,7 @@ def waterPlant(node_id):
     
     pin = 17 # default
 
+    # Pin for Solenoid Valve
     if node_id == "-814970655": # microbit id: M1
         pin = 17 # Need to hardcode
     elif node_id == "-815128158": # microbit id: M2
@@ -197,11 +203,11 @@ def waterPlant(node_id):
         
     GPIO.output(pin, 1)
     time.sleep(1)
-    GPIO.output(18, 1)
+    GPIO.output(18, 1) # Water Pump
 
     time.sleep(3)
 
-    GPIO.output(18, 0)
+    GPIO.output(18, 0) # Water Pump
     time.sleep(1)
     GPIO.output(pin, 0)
     
