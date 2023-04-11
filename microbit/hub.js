@@ -110,9 +110,11 @@ basic.forever(function () {
         }
       }
 
-      basic.showString("" + response);
       serial.writeLine("" + response);
       state = 2
+
+      // Debugging
+      basic.showString("" + response);
     }
   }
 });
