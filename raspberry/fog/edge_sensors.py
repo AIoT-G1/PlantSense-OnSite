@@ -82,7 +82,7 @@ def serialCommand(receiver, command):
 def automateCommandSensorDataCollection():
     # Automate Plant Sensor Data Collection (Send Commands)
     response = serialCommand("hub","cmd:sensor=")
-    time.sleep(2)
+    time.sleep(5)
         
     listSensorValues = response.split(',')
 
