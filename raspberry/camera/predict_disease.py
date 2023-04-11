@@ -25,7 +25,7 @@ def predict():
 #with open('cnn_model.pkl' , 'rb') as f:
  #   lr = pickle.load(f)
     
-    lr = load_model('model.h5')
+    lr = load_model('/home/pi/Desktop/Detect_Disease/model.h5')
 # check prediction
 
     labels = ['Tomato_Bacterial_spot', 'Tomato_Early_blight', 'Tomato_Late_blight', 'Tomato_Leaf_Mold' ,'Tomato__Target_Spot','Tomato_YellowLeaf__Curl_Virus', 'Tomato_mosaic_virus','Tomato_healthy','Bean_angular_leaf','Bean_rust','Bean_healthy']
