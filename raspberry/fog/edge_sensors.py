@@ -36,8 +36,9 @@ GPIO.setup(18, GPIO.OUT)  # water pump
 hub_serial_port = '/dev/ttyACM0'
 water_tank_serial_port = '/dev/ttyACM1'
 
-# Dict for Rain Prediction Requests (To be added in the following format: [serialNumber] = [sm_reading], for each plant. Once rain data retrieved, remove from this dict)
-rainPredictionRequests = {}
+# Independent (5min Intervals via Cloud Rain Prediction: 'yes' or 'no')
+cond = thread.allocate_lock()
+boolIsGoingToRain = None #Initialise as None (While loop will be used to 'wait')
 
 # SerialHub (ttyACM0)
 def serialCommand(receiver, command):
@@ -106,10 +107,18 @@ def automateCommandSensorDataCollection():
     socketClient(formattedWeatherSensorData)
     
     # Send One-time Request from Cloud to conduct Rain Predictions Algo. (Should return True/False on subscribe())
-    requestRainPredictionResultFromCloud(temp, humidity)
-
+    cond.acquire()
+    socketClient("nusIS5451Plantsense-weather=" +
+                 str(json.dumps({"action": "predict", "temp": temp, "humidity": humidity})))
+    
+    print("Called requestRainPredictionResultFromCloud() successfully")
+    print("Waiting for response from Cloud Server...")
+    
+    cond.acquire()
+    # Online response takes some time
+   
+    print("Response received, proceeding with sensor value collection")
     for sensorValue in listSensorValues:
-
         print(sensorValue)
 
         # Take note that Microbits have max limit of 19 char (String); radio.sendString()
@@ -144,7 +153,7 @@ def automateCommandSensorDataCollection():
         
         # fullSerialNumber = listMicrobitDevices[index]
         
-        formattedPlantSensorData = "nusIS5451Plantsense-plant_sensor_data=" + str(json.dumps({"timestamp": timestamp, "timestamp_short": timestamp_short, "type": "plant_node_data", "plant_node_id": detectedSerialNumber, "moisture": sm_reading, "light": light_reading}))
+        formattedPlantSensorData = "nusIS5451Plantsense-plant_sensor_data=" + str(json.dumps({"timestamp": timestamp, "plant_node_id": detectedSerialNumber, "moisture": sm_reading, "light": light_reading}))
 
         # CLI
         print(formattedPlantSensorData)
@@ -153,61 +162,59 @@ def automateCommandSensorDataCollection():
         # nusIS5451Plantsense-plant_sensor_data
         socketClient(formattedPlantSensorData)
 
-        # Add requested plant node information into rainPredictionRequests dict
-        rainPredictionRequests[detectedSerialNumber] = sm_reading
+        print("boolIsGoingToRain: " + str(boolIsGoingToRain))
+        
+        # If-Else Water Plant Algo: Check against Soil Moisture sensor readings.
+        if (boolIsGoingToRain == False and int(sm_reading) < 500):
+            waterPlant(detectedSerialNumber)
 
-def requestRainPredictionResultFromCloud(temp, humidity):
-    # Rain Prediction WILL NOT BE PERFORMED here, but on Cloud.py Server based on regular intervals (i.e. 30mins) which will determine where there is a need to water plant or not (based on Soil Moisture readings). Based on rain prediction (True/False or Yes/No), Cloud.py will send a command through CloudRelay.py > Edge_sensors.py: SendWaterCommand(). At any time, Edge Sensor can request rainPredictionOutput from Cloud.py
-    socketClient("nusIS5451Plantsense-weather=" +
-                 str(json.dumps({"action": "predict", "temp": temp, "humidity": humidity})))
-
-    # This is only requesting, no action is done until Cloud server sends back the requested data value (i.e. 'yes' or 'no')
-
+    cond.release()
 # Retrieve Rain Prediction from Cloud, and then Water Plant if needed
-def retrievedRainPredictionFromCloud(rain_result):
-    # Default
-    boolIsGoingToRain = False
+def retrievedRainPredictionFromCloud(result):
+    print("Executed retrievedRainPredictionFromCloud()")
+    print("Received result = " + str(result))
 
-    if (rain_result == "yes"):
+    if (result == "yes"):
         boolIsGoingToRain = True
-    elif (rain_result == "no"):
+    elif (result == "no"):
         boolIsGoingToRain = False
-
-    # If-Else Water Plant Algo: Check against Soil Moisture sensor readings.
-    for plant_node_id, sm_reading in rainPredictionRequests:
-        if (not boolIsGoingToRain and int(sm_reading) < 500):
-            waterPlant(plant_node_id)
-
-    # Empty dict rainPredictionRequests
-    rainPredictionRequests = {}
+    else:
+        boolIsGoingToRain = False
+    
+    cond.release()
+    print("Updated: boolIsGoingToRain = " + str(boolIsGoingToRain))
     
 def waterPlant(node_id):
-        pin = 17 # default
+    
+    pin = 17 # default
 
-        if node_id == "-814970655": # microbit id: M1
-            pin = 17 # Need to hardcode
-        elif node_id == "-815128158": # microbit id: M2
-            pin = 5 # Need to hardcode
-
-        GPIO.output(pin, 1)
-        time.sleep(1)
-        GPIO.output(18, 1)
-
-        time.sleep(3)
-
-        GPIO.output(18, 0)
-        time.sleep(1)
-        GPIO.output(pin, 0)
+    if node_id == "-814970655": # microbit id: M1
+        pin = 17 # Need to hardcode
+    elif node_id == "-815128158": # microbit id: M2
+        pin = 5 # Need to hardcode
         
-        now = datetime.datetime.now()
-        timestamp = str(now)
-        timestamp_short = now.strftime("%Y%m%d %H%M%S")
+    print("waterPlant() for Node Id = "+ node_id + "on Pin = " + str(pin))
+        
+    GPIO.output(pin, 1)
+    time.sleep(1)
+    GPIO.output(18, 1)
 
-        # Insert into "watering_history" of plant_data collection based on plant_node_id
-        socketClient("nusIS5451Plantsense-plant_info=" +
-                     str({"action": "update_last_watered", "plant_node_id": node_id, "timestamp": timestamp}))
+    time.sleep(3)
+
+    GPIO.output(18, 0)
+    time.sleep(1)
+    GPIO.output(pin, 0)
+    
+    now = datetime.datetime.now()
+    timestamp = str(now)
+    timestamp_short = now.strftime("%Y%m%d %H%M%S")
+
+    # Insert into "watering_history" of plant_data collection based on plant_node_id
+    socketClient("nusIS5451Plantsense-plant_info=" +
+                    str({"action": "update_last_watered", "plant_node_id": node_id, "timestamp": timestamp}))
         
 def automateCommandWaterTank():
+    print("automateCommandWaterTank()")
 
     response = serialCommand("water_tank", "cmd:water_tank")
     time.sleep(2)
@@ -225,6 +232,7 @@ def automateCommandWaterTank():
 
 # Received from Cloud.py
 def serviceClient(clientSocket, address):
+    print("serviceClient()")
 
     print("Connection from: " + str(address))
 
@@ -238,8 +246,9 @@ def serviceClient(clientSocket, address):
         
         # Retrieved RainPrediction Response from Cloud.py
         if (data is not None):
-            if data['rain_result'] != "":
-                retrievedRainPredictionFromCloud(data['rain_result'])
+            data = json.loads(data)
+            if data['result'] != "":
+                retrievedRainPredictionFromCloud(data['result'])
 
         data = 'ACK'
         clientSocket.send(data.encode('utf-8'))
@@ -305,8 +314,7 @@ if len(strMicrobitDevices[1]) > 0:
 
             # Add connected micro:bit device onto MongoDB (Online should check)
             socketClient("nusIS5451Plantsense-plant_info=" +
-                            str(json.dumps({"action": "update_plant", "plant_node_id": mb, "name": "", "description": "",
-                                "disease": "", "type": "", "photo_url": "", "water_history": []})))
+                            str(json.dumps({"action": "update_plant", "plant_node_id": mb})))
 
         # Get sensorIntervals User Settings from DB (i.e. 15mins), and schedule accordingly
         schedule.every(sensorIntervals).minutes.do(
