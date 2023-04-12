@@ -1,16 +1,12 @@
 let serial_connected = 0
-let ULTRASONIC_POSITION = 40 //cm
-let MAX_TANK_HEIGHT = 30 //cm
+let ULTRASONIC_POSITION = 30 //cm
+let MAX_TANK_HEIGHT = 20 //cm
 let data = ""
 
 serial.redirectToUSB()
 
 basic.showIcon(IconNames.Yes)
 basic.forever(function () {
-<<<<<<< Updated upstream
-=======
-    basic.showString("W")
->>>>>>> Stashed changes
 })
 
 function get_water_level() {
