@@ -1,6 +1,6 @@
 let serial_connected = 0
-let ULTRASONIC_POSITION = 20 //cm
-let MAX_TANK_HEIGHT = 10 //cm
+let ULTRASONIC_POSITION = 10 //cm
+let MAX_TANK_HEIGHT = 20 //cm
 let data = ""
 
 serial.redirectToUSB()
