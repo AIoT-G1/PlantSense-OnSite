@@ -5,10 +5,12 @@ import sys
 import os
 from predict_disease import predict
 #from fog.edge_sensor import sendPlantImage
+
 from picamera2 import Picamera2, Preview
 #path = os.path.abspath("/home/pi/Desktop/PlantSense-OnSite/raspberry/fog")
 #sys.path.append(path)
-from edge_sensors import sendPlantImage
+from edge_sensors import sendPlantDisease
+#from req import upload_image
 sys.path.insert(0, '/home/pi/Desktop/PlantSense-OnSite/raspberry/fog')
 
 
@@ -44,9 +46,10 @@ while True:
     print("message:", message)
     if message != "":
 	    message,number = message.split("=")
-        number = int(number)
+	    number = int(number)
    
     if message == 'predict':
+	
         # Call the on_microbit_message method with the received message
         disease = captureAndpredict()
         response = 'move'
@@ -54,8 +57,8 @@ while True:
         sent = 0
         
         s.write(str.encode(response))
-        if sent == 0:
-            sendPlantImage(number,disease)
-            sent = 1
+
+        sendPlantDisease(number,disease)
+
 		
 s.close()
