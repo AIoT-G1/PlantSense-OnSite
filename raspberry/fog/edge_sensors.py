@@ -107,8 +107,8 @@ def automateCommandSensorDataCollection():
     socketClient(formattedWeatherSensorData)
     
     
-    print("HARD CODE WATERPLANT -815128158")
-    waterPlant("-815128158")
+    # print("HARD CODE WATERPLANT -815128158")
+    # waterPlant("-815128158")
     
     # Send One-time Request from Cloud to conduct Rain Predictions Algo. (Should return True/False on subscribe())
     cond.acquire()
