@@ -179,9 +179,9 @@ def retrievedRainPredictionFromCloud(result):
     print("Executed retrievedRainPredictionFromCloud()")
     print("Received result = " + str(result))
 
-    if (result == "yes"):
+    if (result == "yes" or result == "Yes"):
         boolIsGoingToRain = True
-    elif (result == "no"):
+    elif (result == "no" or result == "No"):
         boolIsGoingToRain = False
     else:
         boolIsGoingToRain = False #default if error
