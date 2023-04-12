@@ -5,16 +5,16 @@
 
 # For scheduling task execution (pip install schedule)
 # https://stackoverflow.com/questions/22715086/scheduling-python-script-to-run-every-hour-accurately
-import schedule
-import datetime
+# import schedule
+# import datetime
 import json
 
 import socket
 import _thread as thread
-import serial
-import time
-import RPi.GPIO as GPIO
-import requests
+# import serial
+# import time
+# import RPi.GPIO as GPIO
+# import requests
 
 
 # Image
@@ -24,25 +24,9 @@ import base64
 
 def sendPlantImage(detectedSerialNumber,disease):
         node_id = detectedSerialNumber
-        with open("leaf.jpg", "rb") as image_file:
-            encoded_string = base64.b64encode(image_file.read())
 
-            part1 = encoded_string[:len(encoded_string)//3]
-            part2 = encoded_string[len(encoded_string)//3:2*len(encoded_string)//3]
-            part3 = encoded_string[2*len(encoded_string)//3:]
-
-            # encode each part to base64
-            encoded_part1 = str(base64.b64encode(part1).decode())
-            encoded_part2 = str(base64.b64encode(part2).decode())
-            encoded_part3 = str(base64.b64encode(part3).decode())
-
-            formattedImageData1 = "nusIS5451Plantsense-plant_info="+str(json.dumps({"action": "update_last_image_1", "plant_node_id": node_id, "photo_url": encoded_part1,"disease":disease}))
-            formattedImageData2 = "nusIS5451Plantsense-plant_info="+str(json.dumps({"action": "update_last_image_2", "plant_node_id": node_id, "photo_url": encoded_part2,"disease":disease}))
-            formattedImageData3 = "nusIS5451Plantsense-plant_info="+str(json.dumps({"action": "update_last_image_3", "plant_node_id": node_id, "photo_url": encoded_part3,"disease":disease}))
-        
-            socketClient(formattedImageData1)
-            socketClient(formattedImageData2)
-            socketClient(formattedImageData3)
+        formatted_image_data = "nusIS5451Plantsense-plant_info="+str(json.dumps({"action":"update_last_disease","plant_node_id":str(node_id),"disease":disease}))
+        socketClient(formatted_image_data)
 
 
 

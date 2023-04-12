@@ -25,16 +25,14 @@ def forwardEdgeSensorsData(data):
     # Forwards data from rhub to cloud
     print('From Edge Sensors -> {}'.format(data))
     #print(data)
-    r = []
-    if '='  in data:
-        print(data.split('=')[1])
-        r = mqtt.publish(data.split('=')[0], data.split('=')[1])
     
-    if r != []:
-        if r[0] == 0 :
-            print("Message sent successfully")
-        else:
-            print("Failed to send message")
+    r = mqtt.publish(data.split('=')[0], data.split('=')[1])
+    
+    
+    if r[0] == 0 :
+        print("Message sent successfully")
+    else:
+        print("Failed to send message")
 
 
 def serviceClient(clientSocket, address):
@@ -47,7 +45,11 @@ def serviceClient(clientSocket, address):
             break
         forwardEdgeSensorsData(data)
         data = 'ACK'
-        clientSocket.send(data.encode('utf-8'))
+        try:
+            clientSocket.send(data.encode('utf-8'))
+        except BrokenPipeError:
+            print("Error: client closed connection unexpectedly")
+        # clientSocket.send(data.encode('utf-8'))
 
     clientSocket.close()
 
