@@ -38,7 +38,7 @@ water_tank_serial_port = '/dev/ttyACM1'
 
 # Independent (5min Intervals via Cloud Rain Prediction: 'yes' or 'no')
 cond = thread.allocate_lock()
-boolIsGoingToRain = None #Initialise as None (While loop will be used to 'wait')
+boolIsGoingToRain = False #Initialise as None (While loop will be used to 'wait')
 
 # SerialHub (ttyACM0)
 def serialCommand(receiver, command):
@@ -111,19 +111,22 @@ def automateCommandSensorDataCollection():
     # waterPlant("-815128158")
     
     # Send One-time Request from Cloud to conduct Rain Predictions Algo. (Should return True/False on subscribe())
-    cond.acquire()
+    # cond.acquire()
     socketClient("nusIS5451Plantsense-weather=" +
                  str(json.dumps({"action": "predict", "temp": temp, "humidity": humidity})))
     
     print("Called requestRainPredictionResultFromCloud() successfully")
     print("Waiting for response from Cloud Server...")
     
-    cond.acquire()
+    
     # Online response takes some time
    
     print("Response received, proceeding with sensor value collection")
     for sensorValue in listSensorValues:
         print(sensorValue)
+        
+        # cond.acquire()
+        # print("after acquire " + str(boolIsGoingToRain))
 
         # Take note that Microbits have max limit of 19 char (String); radio.sendString()
 
@@ -169,11 +172,12 @@ def automateCommandSensorDataCollection():
         print("boolIsGoingToRain: " + str(boolIsGoingToRain))
         
         # If-Else Water Plant Algo: Check against Soil Moisture sensor readings.
-        if (boolIsGoingToRain == False and int(sm_reading) < 500):
+        if (boolIsGoingToRain == False and int(sm_reading) < 1023):
             waterPlant(detectedSerialNumber)
+            
+        # cond.release()
         
 
-    cond.release()
 # Retrieve Rain Prediction from Cloud, and then Water Plant if needed
 def retrievedRainPredictionFromCloud(result):
     print("Executed retrievedRainPredictionFromCloud()")
@@ -186,7 +190,8 @@ def retrievedRainPredictionFromCloud(result):
     else:
         boolIsGoingToRain = False #default if error
     
-    cond.release()
+    print("RELEASE")
+    # cond.release()
     print("Updated: boolIsGoingToRain = " + str(boolIsGoingToRain))
     
 def waterPlant(node_id):
@@ -249,6 +254,7 @@ def serviceClient(clientSocket, address):
 
         # Do whatever with data
         print(str(data))
+        print("AAAAAAA")
         
         # Retrieved RainPrediction Response from Cloud.py
         if (data is not None):
